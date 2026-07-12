@@ -1,0 +1,24 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "bgm": "data/test/bgm.wav",
+  "bgmVolume": 0.15,
+  "scenes": [
+    {
+      "text": "こんにちは！YouTube動画量産ツールのデモへようこそ。",
+      "image": "data/test/scene1.png",
+      "audio": "data/test/audio1.wav"
+    },
+    {
+      "text": "このツールはJSONファイルに記述された情報を読み取り、自動で動画を構成します。",
+      "image": "data/test/scene2.png",
+      "audio": "data/test/audio2.wav"
+    },
+    {
+      "text": "音声ファイルの長さが自動で計算され、それに基づいてシーンの尺が決定されます。",
+      "image": "data/test/scene3.png",
+      "audio": "data/test/audio3.wav"
+    }
+  ]
+}

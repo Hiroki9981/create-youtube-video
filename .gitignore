@@ -15,3 +15,23 @@ out/
 *.log
 npm-debug.log*
 .vscode/
+
+# 自動生成ファイル（スクリプトが作成する中間ファイル）
+public/resolved-props.json
+
+# メディアアセット（画像・音声・動画は大容量なのでGit管理外）
+public/data/**/*.png
+public/data/**/*.jpg
+public/data/**/*.jpeg
+public/data/**/*.webp
+public/data/**/*.gif
+public/data/**/*.wav
+public/data/**/*.mp3
+public/data/**/*.aac
+public/data/**/*.m4a
+public/data/**/*.mp4
+public/data/**/*.mov
+public/data/**/*.webm
+
+# ただし各動画フォルダのJSONは管理対象に含める
+!public/data/**/video-config.json

@@ -1,1 +1,9 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Outfit:wght@400;600;800&display=swap');
+
+body {
+  font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+}

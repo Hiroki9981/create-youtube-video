@@ -7,11 +7,13 @@
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.488",
+    "@remotion/media-utils": "^4.0.488",
+    "@remotion/tailwind-v4": "4.0.488",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.488",
-    "@remotion/tailwind-v4": "4.0.488",
-    "tailwindcss": "4.0.0"
+    "tailwindcss": "4.0.0",
+    "tsx": "^4.23.0"
   },
   "devDependencies": {
     "@remotion/eslint-config-flat": "4.0.488",
@@ -25,7 +27,8 @@
     "dev": "remotion studio",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && tsc"
+    "lint": "eslint src && tsc",
+    "generate": "npx tsx scripts/generate-video.ts"
   },
   "sideEffects": [
     "*.css"

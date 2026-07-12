@@ -1,0 +1,122 @@
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { getAudioDurationInSeconds } from '@remotion/media-utils';
+
+async function main() {
+  // Parse command line arguments
+  const args = process.argv.slice(2);
+  let jsonPath = '';
+  
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--json' || args[i] === '-j') {
+      jsonPath = args[i + 1];
+      i++;
+    } else if (args[i].startsWith('--json=')) {
+      jsonPath = args[i].split('=')[1];
+    }
+  }
+
+  // Fallback to first argument if not explicitly passed with --json
+  if (!jsonPath && args[0] && !args[0].startsWith('-')) {
+    jsonPath = args[0];
+  }
+
+  if (!jsonPath) {
+    console.error('Error: Please specify the input JSON file path.');
+    console.error('Usage: npm run generate -- <path-to-json>');
+    console.error('Example: npm run generate -- public/data/video-config.json');
+    process.exit(1);
+  }
+
+  const absoluteJsonPath = path.resolve(process.cwd(), jsonPath);
+  if (!fs.existsSync(absoluteJsonPath)) {
+    console.error(`Error: JSON file not found at ${absoluteJsonPath}`);
+    process.exit(1);
+  }
+
+  console.log(`Reading video config: ${absoluteJsonPath}`);
+  const config = JSON.parse(fs.readFileSync(absoluteJsonPath, 'utf8'));
+
+  const fps = config.fps || 30;
+
+  // public/ はアセットの直接の置き場所 - コピー不要
+  const publicDir = path.resolve(process.cwd(), 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+
+  // Resolve durations for scenes
+  const resolvedScenes = [];
+  let totalDurationFrames = 0;
+
+  for (let idx = 0; idx < config.scenes.length; idx++) {
+    const scene = config.scenes[idx];
+    let durationInFrames = undefined;
+
+    if (scene.audio) {
+      const audioAbsolutePath = path.resolve(publicDir, scene.audio);
+      
+      if (fs.existsSync(audioAbsolutePath)) {
+        try {
+          console.log(`Analyzing audio duration: ${audioAbsolutePath}`);
+          const durationSeconds = await getAudioDurationInSeconds(audioAbsolutePath);
+          durationInFrames = Math.ceil(durationSeconds * fps);
+          console.log(`Scene ${idx + 1}: Calculated duration = ${durationSeconds.toFixed(2)}s (${durationInFrames} frames)`);
+        } catch (err) {
+          console.warn(`Warning: Could not get audio duration on server-side. Browser will resolve it at render time.`);
+        }
+      } else {
+        console.error(`Warning: Audio file not found at ${audioAbsolutePath}. Browser will resolve it if available.`);
+      }
+    } else {
+      console.log(`Scene ${idx + 1}: No audio specified. Using default 5.00s (${5 * fps} frames).`);
+      durationInFrames = 5 * fps;
+    }
+
+    resolvedScenes.push({
+      ...scene,
+      durationInFrames
+    });
+    if (durationInFrames) {
+      totalDurationFrames += durationInFrames;
+    }
+  }
+
+  const resolvedProps = {
+    ...config,
+    scenes: resolvedScenes,
+    totalDurationFrames
+  };
+
+  const resolvedPropsPath = path.resolve(publicDir, 'resolved-props.json');
+  fs.writeFileSync(resolvedPropsPath, JSON.stringify(resolvedProps, null, 2));
+  console.log(`Saved resolved props for Remotion at: ${resolvedPropsPath}`);
+
+  // Create out/ directory for the rendered video
+  const outDir = path.resolve(process.cwd(), 'out');
+  if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir, { recursive: true });
+  }
+
+  // JSONファイルの親フォルダ名をファイル名に使う (例: public/data/test/ → test.mp4)
+  const folderName = path.basename(path.dirname(absoluteJsonPath));
+  const outputVideoPath = path.resolve(outDir, `${folderName}.mp4`);
+  console.log(`Rendering video to: ${outputVideoPath}`);
+
+  const command = `npx remotion render MyComp "${outputVideoPath}" --props=public/resolved-props.json --overwrite`;
+  console.log(`Executing command: ${command}`);
+  
+  try {
+    execSync(command, { stdio: 'inherit' });
+    console.log(`\nSuccess! Video rendered successfully at: ${outputVideoPath}`);
+  } catch (err) {
+    console.error('Error: Remotion render command failed.', err);
+    process.exit(1);
+  }
+}
+
+main().catch(err => {
+  console.error('Unexpected error:', err);
+  process.exit(1);
+});
