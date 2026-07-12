@@ -1,7 +1,17 @@
-node_modules
-dist
+# Node.js
+node_modules/
+dist/
 .DS_Store
+
+# Remotion
+out/
+.remotion/
+.cache/
+
+# 環境変数
 .env
 
-# Ignore the output video from Git but not videos you import into src/.
-out
+# ログやその他
+*.log
+npm-debug.log*
+.vscode/
