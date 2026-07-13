@@ -10,16 +10,34 @@ import {
   staticFile,
   useCurrentFrame,
   useVideoConfig,
+  Video,
 } from "remotion";
 import React from "react";
-import { getAudioDurationInSeconds } from "@remotion/media-utils";
+import { getAudioDurationInSeconds, getVideoMetadata } from "@remotion/media-utils";
+
+export interface CharacterProps {
+  image: string;
+  position?: 'left' | 'right' | 'center';
+  isTalking?: boolean;
+  style?: React.CSSProperties;
+}
+
+const cleanStaticPath = (srcPath: string): string => {
+  if (srcPath.startsWith('public/')) {
+    return srcPath.replace(/^public\//, '');
+  }
+  return srcPath;
+};
 
 export interface Scene {
   text: string;
   image?: string;
+  video?: string;
   audio?: string;
   durationInFrames?: number;
   textStyle?: React.CSSProperties;
+  character?: CharacterProps;
+  speaker?: 'left' | 'right';
 }
 
 export interface VideoProps {
@@ -75,23 +93,17 @@ export const MyComposition = () => {
   );
 };
 
+// Character Renderer Component is removed to focus solely on the background video.
+
 // Scene Renderer Component
 const SceneComponent: React.FC<{
   scene: Scene;
   durationInFrames: number;
-}> = ({ scene, durationInFrames }) => {
+  isFirstScene: boolean;
+}> = ({ scene, durationInFrames, isFirstScene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
-  // 1. Ken Burns Effect (Image scaling)
-  const imageScale = interpolate(
-    frame,
-    [0, durationInFrames],
-    [1.0, 1.08],
-    { extrapolateRight: "clamp" }
-  );
-
-  // 2. Cross-fade scene transition (fade-in at start, fade-out at end)
+  // Cross-fade scene transition (fade-in at start, fade-out at end)
   const transitionDuration = 12; // frames
   const sceneOpacity = interpolate(
     frame,
@@ -100,10 +112,10 @@ const SceneComponent: React.FC<{
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
-  // 3. Caption spring entry animation (slide up and fade in)
+  // Caption spring entry animation (slide up and fade in)
   const textSpring = spring({
     frame,
-    fps,
+    fps: 30,
     config: { damping: 14, mass: 0.5 },
   });
   
@@ -112,30 +124,41 @@ const SceneComponent: React.FC<{
 
   return (
     <div
-      style={{ opacity: sceneOpacity }}
+      style={{ 
+        opacity: sceneOpacity,
+      }}
       className="absolute inset-0 w-full h-full flex flex-col justify-end items-center bg-black overflow-hidden"
     >
-      {/* Background Image with Ken Burns Effect */}
-      {scene.image && (
+      {/* Background Video or Image */}
+      {scene.video ? (
+        <Video
+          src={staticFile(cleanStaticPath(scene.video))}
+          className="absolute inset-0 w-full h-full object-cover"
+          volume={0}
+          loop
+        />
+      ) : scene.image ? (
         <Img
-          src={staticFile(scene.image)}
+          src={staticFile(cleanStaticPath(scene.image))}
           alt="Scene background"
-          style={{ transform: `scale(${imageScale})` }}
           className="absolute inset-0 w-full h-full object-cover"
         />
-      )}
+      ) : null}
 
-      {/* Dark gradient overlay at the bottom for caption readability */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+      {/* Dark gradient overlay at the bottom */}
+      <div 
+        className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none z-10" 
+      />
 
-      {/* Subtitles Overlay Container */}
+      {/* Subtitles Overlay Container (Static in foreground) */}
       <div 
         style={{
           transform: `translateY(${textTranslateY}px)`,
           opacity: textOpacity,
+          zIndex: 20,
           ...scene.textStyle
         }}
-        className="relative z-10 mb-20 max-w-[85%] bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-10 py-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center"
+        className="relative mb-20 max-w-[85%] bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-10 py-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center"
       >
         <span className="text-white text-4xl font-bold tracking-wide leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-sans text-center">
           {scene.text}
@@ -144,7 +167,10 @@ const SceneComponent: React.FC<{
 
       {/* Voiceover Audio */}
       {scene.audio && (
-        <Audio src={staticFile(scene.audio)} />
+        <Audio 
+          src={staticFile(cleanStaticPath(scene.audio))} 
+          delay={0} // No intro delay
+        />
       )}
     </div>
   );
@@ -159,7 +185,7 @@ export const MyComponent: React.FC<VideoProps> = (props) => {
       {/* Background Music Loop */}
       {bgm && (
         <Audio
-          src={staticFile(bgm)}
+          src={staticFile(cleanStaticPath(bgm))}
           volume={bgmVolume}
           loop
         />
@@ -177,6 +203,7 @@ export const MyComponent: React.FC<VideoProps> = (props) => {
               <SceneComponent
                 scene={scene}
                 durationInFrames={duration}
+                isFirstScene={index === 0}
               />
             </Series.Sequence>
           );
@@ -195,20 +222,35 @@ export const calculateMetadata: CalculateMetadataFunction<VideoProps> = async ({
   const resolvedScenes: Scene[] = [];
   let totalDurationFrames = 0;
 
-  for (const scene of mergedProps.scenes) {
+  for (let idx = 0; idx < mergedProps.scenes.length; idx++) {
+    const scene = mergedProps.scenes[idx];
     let durationInFrames = scene.durationInFrames;
 
     if (durationInFrames === undefined) {
-      if (scene.audio) {
+      // Prioritize background video duration if available
+      if (scene.video) {
         try {
-          const audioUrl = staticFile(scene.audio);
+          const videoUrl = staticFile(cleanStaticPath(scene.video));
+          const metadata = await getVideoMetadata(videoUrl);
+          durationInFrames = Math.ceil(metadata.durationInSeconds * fps);
+        } catch (e) {
+          console.warn(`Failed to resolve video duration for scene: ${scene.video}`, e);
+        }
+      }
+
+      // Fallback to audio duration if video duration failed or not specified
+      if (durationInFrames === undefined && scene.audio) {
+        try {
+          const audioUrl = staticFile(cleanStaticPath(scene.audio));
           const durationSeconds = await getAudioDurationInSeconds(audioUrl);
           durationInFrames = Math.ceil(durationSeconds * fps);
         } catch (e) {
           console.warn(`Failed to resolve audio duration for scene: ${scene.audio}`, e);
           durationInFrames = 5 * fps;
         }
-      } else {
+      }
+
+      if (durationInFrames === undefined) {
         durationInFrames = 5 * fps;
       }
     }

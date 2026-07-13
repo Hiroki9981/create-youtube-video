@@ -3,6 +3,23 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { getAudioDurationInSeconds } from '@remotion/media-utils';
 
+// Helper to get video duration on server-side using Remotion's internal ffprobe
+function getVideoDurationServer(videoPath: string): number | undefined {
+  try {
+    const ffprobePath = path.resolve(process.cwd(), 'node_modules', '@remotion', 'compositor-win32-x64-msvc', 'ffprobe.exe');
+    if (fs.existsSync(ffprobePath)) {
+      const output = execSync(`"${ffprobePath}" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`, { encoding: 'utf8' });
+      const seconds = parseFloat(output.trim());
+      if (!isNaN(seconds)) {
+        return seconds;
+      }
+    }
+  } catch (e) {
+    // Ignore error and fallback
+  }
+  return undefined;
+}
+
 async function main() {
   // Parse command line arguments
   const args = process.argv.slice(2);
@@ -51,10 +68,26 @@ async function main() {
   let totalDurationFrames = 0;
 
   for (let idx = 0; idx < config.scenes.length; idx++) {
-    const scene = config.scenes[idx];
-    let durationInFrames = undefined;
+    const scene = { ...config.scenes[idx] };
+    let durationInFrames = scene.durationInFrames;
 
-    if (scene.audio) {
+    // Check if background video file exists, otherwise fallback to static image
+    if (scene.video) {
+      const videoAbsolutePath = path.resolve(publicDir, scene.video);
+      if (fs.existsSync(videoAbsolutePath)) {
+        // Try getting video duration on server-side using our helper
+        const videoDuration = getVideoDurationServer(videoAbsolutePath);
+        if (videoDuration !== undefined) {
+          durationInFrames = Math.ceil(videoDuration * fps);
+          console.log(`Scene ${idx + 1}: Video duration resolved = ${videoDuration.toFixed(2)}s (${durationInFrames} frames)`);
+        }
+      } else {
+        console.warn(`[Fallback] Warning: Video file not found at ${videoAbsolutePath}. Falling back to static image.`);
+        delete scene.video;
+      }
+    }
+
+    if (durationInFrames === undefined && scene.audio) {
       const audioAbsolutePath = path.resolve(publicDir, scene.audio);
       
       if (fs.existsSync(audioAbsolutePath)) {
@@ -69,8 +102,10 @@ async function main() {
       } else {
         console.error(`Warning: Audio file not found at ${audioAbsolutePath}. Browser will resolve it if available.`);
       }
-    } else {
-      console.log(`Scene ${idx + 1}: No audio specified. Using default 5.00s (${5 * fps} frames).`);
+    }
+
+    if (durationInFrames === undefined) {
+      console.log(`Scene ${idx + 1}: No audio or video resolved. Using default 5.00s (${5 * fps} frames).`);
       durationInFrames = 5 * fps;
     }
 
@@ -104,7 +139,8 @@ async function main() {
   const outputVideoPath = path.resolve(outDir, `${folderName}.mp4`);
   console.log(`Rendering video to: ${outputVideoPath}`);
 
-  const command = `npx remotion render MyComp "${outputVideoPath}" --props=public/resolved-props.json --overwrite`;
+  const compositionId = config.compositionId || 'MyComp';
+  const command = `npx remotion render ${compositionId} "${outputVideoPath}" --props=public/resolved-props.json --overwrite`;
   console.log(`Executing command: ${command}`);
   
   try {

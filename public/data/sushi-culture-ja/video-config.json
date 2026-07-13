@@ -1,0 +1,16 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "bgm": "data/sushi-culture-ja/bgm.wav",
+  "bgmVolume": 0,
+  "scenes": [
+    {
+      "text": "日本の寿司の心臓部は、実はネタの魚だけではなく、絶妙な温度のシャリなんだよ！",
+      "image": "data/sushi-culture-ja/bg-sushi-bar.png",
+      "video": "data/sushi-culture-ja/veo-background.mp4",
+      "audio": "data/sushi-culture-ja/audio_narration.wav",
+      "speaker": "right"
+    }
+  ]
+}
