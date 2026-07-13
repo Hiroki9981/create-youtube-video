@@ -5,6 +5,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
   spring,
+  Img,
 } from "remotion";
 import React from "react";
 
@@ -42,12 +43,12 @@ const yearColors: Record<number, string> = {
 };
 
 // ── Layout constants for 9:16 (1080×1920) ──
-const CHART_BAR_START_X = 210;
-const CHART_WIDTH = 640;
-const BAR_HEIGHT = 60;
-const BAR_SPACING = 145;
-const BAR_TOP_OFFSET = 30;
-const LABEL_WIDTH = 170;
+const CHART_BAR_START_X = 200;
+const CHART_WIDTH = 550;
+const BAR_HEIGHT = 44;
+const BAR_SPACING = 82;
+const BAR_TOP_OFFSET = 40;
+const LABEL_WIDTH = 160;
 const INTRO_FRAMES = 75; // 2.5 seconds intro animation
 
 // ── Intro Title Animation Component ──
@@ -271,13 +272,146 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
   const frame = useCurrentFrame();
   const { fps, durationInFrames: totalDuration } = useVideoConfig();
 
+  // Frame 0 shows the custom thumbnail (for mobile YouTube Shorts thumbnail selection)
+  if (frame === 0) {
+    return (
+      <div
+        style={{
+          width: 1080,
+          height: 1920,
+          background: "#0a0a0f",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Flashy generated background image */}
+        <Img
+          src={staticFile("data/inbound-tourism/thumbnail_bg.png")}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: 0,
+          }}
+        />
+
+        {/* Dark overlay to ensure text contrast */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(10,10,15,0.4) 0%, rgba(10,10,15,0.75) 100%)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Thumbnail Badge */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #e84393, #6c5ce7)",
+            padding: "14px 40px",
+            borderRadius: 50,
+            color: "#ffffff",
+            fontSize: 34,
+            fontWeight: 800,
+            letterSpacing: 2,
+            marginBottom: 50,
+            boxShadow: "0 10px 30px rgba(232, 67, 147, 0.6)",
+            textTransform: "uppercase",
+            zIndex: 10,
+          }}
+        >
+          INBOUND STATS
+        </div>
+
+        {/* Thumbnail Title */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "90%",
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 140,
+              fontWeight: 950,
+              color: "#ff4757",
+              textShadow: "0 10px 40px rgba(255, 71, 87, 0.8), 0 0 100px rgba(255, 71, 87, 0.5)",
+              transform: "rotate(-3deg)",
+              marginBottom: 20,
+              letterSpacing: 4,
+            }}
+          >
+            激変！
+          </div>
+          <div
+            style={{
+              fontSize: 82,
+              fontWeight: 900,
+              color: "#ffffff",
+              textAlign: "center",
+              lineHeight: 1.3,
+              textShadow: "0 10px 40px rgba(0, 0, 0, 0.95)",
+              letterSpacing: 2,
+            }}
+          >
+            訪日外国人の
+            <br />
+            <span
+              style={{
+                background: "linear-gradient(to right, #ffd32a, #ffa502, #ff7f50)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontSize: 102,
+                fontWeight: 950,
+                filter: "drop-shadow(0 4px 15px rgba(255, 211, 42, 0.5))",
+              }}
+            >
+              10年推移
+            </span>
+          </div>
+        </div>
+
+        {/* Subtitle / CTA */}
+        <div
+          style={{
+            marginTop: 90,
+            fontSize: 40,
+            color: "#ffffff",
+            fontWeight: 800,
+            letterSpacing: 4,
+            borderBottom: "4px solid #ff4757",
+            paddingBottom: 12,
+            zIndex: 10,
+            textShadow: "0 4px 15px rgba(0, 0, 0, 0.8)",
+          }}
+        >
+          2016 - 2025 統計データ
+        </div>
+      </div>
+    );
+  }
+
+  // Shift video logic by 1 frame to accommodate the thumbnail frame at the start
+  const adjustedFrame = frame - 1;
+
   // ── 1. Determine current scene index and local frame ──
   let cumulativeFrames = 0;
   let currentSceneIndex = scenes.length - 1;
 
   for (let i = 0; i < scenes.length; i++) {
     const dur = scenes[i].durationInFrames || 180;
-    if (frame < cumulativeFrames + dur) {
+    if (adjustedFrame < cumulativeFrames + dur) {
       currentSceneIndex = i;
       break;
     }
@@ -289,7 +423,7 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
   const nextSceneIdx = Math.min(currentSceneIndex + 1, scenes.length - 1);
   const nextScene = scenes[nextSceneIdx];
   const sceneDuration = currentScene.durationInFrames || 180;
-  const localFrame = frame - cumulativeFrames;
+  const localFrame = adjustedFrame - cumulativeFrames;
 
   // ── 2. Intro handling ──
   // The intro plays during the first INTRO_FRAMES of scene 0.
@@ -319,10 +453,10 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
       : 1;
 
   // Fade out BGM in the last 90 frames (3 seconds) to prevent harsh cutting/cracking
-  const outroStartFrame = totalDuration - 90;
+  const outroStartFrame = (totalDuration - 1) - 90;
   const currentVolume = interpolate(
-    frame,
-    [outroStartFrame, totalDuration - 15],
+    adjustedFrame,
+    [outroStartFrame, (totalDuration - 1) - 15],
     [bgmVolume, 0],
     {
       extrapolateLeft: "clamp",
@@ -409,19 +543,23 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
       {/* ═══ CHART CONTENT (fades in after intro) ═══ */}
       <div
         style={{
-          flex: 1,
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
           opacity: chartOpacity,
+          width: "100%",
         }}
       >
+        {/* Top Spacer for Shorts UI Safe Zone (pushes content below top UI overlay) */}
+        <div style={{ height: 260 }} />
+
         {/* ═══ EVENT TEXT HEADER ═══ */}
-        <div style={{ padding: "30px 40px 0 40px", zIndex: 10, height: 160 }}>
+        <div style={{ padding: "0 40px", zIndex: 10, height: 140, width: "100%", boxSizing: "border-box" }}>
           {eventText && (
             <div
               style={{
                 padding: "20px 30px",
-                background: "rgba(16, 18, 32, 0.7)",
+                background: "rgba(16, 18, 32, 0.75)",
                 border: "1px solid rgba(255,255,255,0.06)",
                 borderRadius: 14,
                 color: "#e2e8f0",
@@ -431,6 +569,7 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
                 height: "100%",
                 display: "flex",
                 alignItems: "center",
+                boxSizing: "border-box",
               }}
             >
               {eventText}
@@ -438,11 +577,16 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
           )}
         </div>
 
-        {/* ── CHART AREA ── */}
+        {/* Gap between header and chart */}
+        <div style={{ height: 30 }} />
+
+        {/* ── CHART AREA (condensed vertically to fit safely in the center) ── */}
         <div
           style={{
-            flex: 1,
-            padding: "20px 30px 20px 30px",
+            height: 850,
+            width: "100%",
+            padding: "0 40px",
+            boxSizing: "border-box",
             position: "relative",
             zIndex: 10,
           }}
@@ -451,29 +595,44 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
           <div
             style={{
               position: "absolute",
-              inset: "30px 20px",
-              background: "rgba(16, 18, 32, 0.5)",
+              inset: "0 40px",
+              background: "rgba(16, 18, 32, 0.55)",
               border: "1px solid rgba(255,255,255,0.04)",
               borderRadius: 20,
             }}
           />
 
-          {/* Event text moved to header */}
+          {/* Watermark year in the background of the chart (faint & safe from overlays) */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 40,
+              right: 80,
+              fontSize: 170,
+              fontWeight: 900,
+              fontFamily: "monospace",
+              color: "rgba(255, 255, 255, 0.05)", // Extremely faint watermark
+              lineHeight: 0.8,
+              zIndex: 1,
+              pointerEvents: "none",
+            }}
+          >
+            {Math.floor(displayYear)}
+          </div>
 
           {/* Max value vertical dashed line */}
           <div
             style={{
               position: "absolute",
-              left: CHART_BAR_START_X - 10 + 20 + CHART_WIDTH,
-              top: BAR_TOP_OFFSET + 30,
-              bottom: 50,
+              left: CHART_BAR_START_X + CHART_WIDTH,
+              top: BAR_TOP_OFFSET,
+              height: BAR_SPACING * 9 + BAR_HEIGHT,
               width: 0,
-              borderRight: "2px dashed rgba(255,100,100,0.35)",
+              borderRight: "2px dashed rgba(255,100,100,0.30)",
               zIndex: 2,
               pointerEvents: "none",
             }}
           />
-
 
           {/* ── BARS ── */}
           <div
@@ -586,15 +745,16 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
               );
             })}
           </div>
-
-          {/* Watermark year moved to root */}
         </div>
 
+        {/* Gap between chart and legend */}
+        <div style={{ height: 30 }} />
+
         {/* ═══ YEAR LEGEND (5 per row grid) ═══ */}
-        <div style={{ padding: "0 36px 14px 36px", zIndex: 10 }}>
+        <div style={{ padding: "0 40px", zIndex: 10, width: "100%", boxSizing: "border-box" }}>
           <div
             style={{
-              background: "rgba(16, 18, 32, 0.7)",
+              background: "rgba(16, 18, 32, 0.75)",
               border: "1px solid rgba(255,255,255,0.06)",
               borderRadius: 14,
               padding: "18px 24px",
@@ -639,37 +799,27 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
           </div>
         </div>
 
-        {/* ═══ FOOTER & YEAR ═══ */}
+        {/* Gap between legend and footer */}
+        <div style={{ height: 20 }} />
+
+        {/* ═══ FOOTER (Year removed from here, credits kept clean) ═══ */}
         <div
           style={{
-            padding: "0 40px 30px 40px",
+            padding: "0 40px",
+            width: "100%",
+            boxSizing: "border-box",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
+            flexDirection: "column",
+            gap: 6,
             zIndex: 10,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ color: "#475569", fontSize: 16, fontWeight: 700 }}>
-              データ出典: 日本政府観光局 (JNTO)
-            </span>
-            <span style={{ color: "#475569", fontSize: 16, fontWeight: 700 }}>
-              VISUALIZED WITH REMOTION
-            </span>
-          </div>
-
-          <div
-            style={{
-              fontSize: 120,
-              fontWeight: 900,
-              fontFamily: "monospace",
-              color: "rgba(255,255,255,0.15)",
-              lineHeight: 0.8,
-              letterSpacing: "-2px",
-            }}
-          >
-            {Math.floor(displayYear)}
-          </div>
+          <span style={{ color: "#475569", fontSize: 16, fontWeight: 700 }}>
+            データ出典: 日本政府観光局 (JNTO)
+          </span>
+          <span style={{ color: "#475569", fontSize: 16, fontWeight: 700 }}>
+            VISUALIZED WITH REMOTION
+          </span>
         </div>
       </div>
 

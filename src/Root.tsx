@@ -38,11 +38,11 @@ const calculateInboundMetadata: CalculateMetadataFunction<InboundVideoProps> = a
     width: props.width || 1080,
     height: props.height || 1920,
     fps,
-    durationInFrames: totalDurationFrames,
+    durationInFrames: totalDurationFrames + 1,
     props: {
       ...props,
       scenes: resolvedScenes,
-      totalDurationFrames
+      totalDurationFrames: totalDurationFrames + 1
     }
   };
 };

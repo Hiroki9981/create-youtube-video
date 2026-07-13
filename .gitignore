@@ -8,8 +8,10 @@ out/
 .remotion/
 .cache/
 
-# 環境変数
+# 環境変数・API鍵
 .env
+client_secret.json
+.credentials/
 
 # ログやその他
 *.log
