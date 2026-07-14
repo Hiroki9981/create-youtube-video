@@ -134,9 +134,16 @@ async function main() {
     fs.mkdirSync(outDir, { recursive: true });
   }
 
-  // JSONファイルの親フォルダ名をファイル名に使う (例: public/data/test/ → test.mp4)
-  const folderName = path.basename(path.dirname(absoluteJsonPath));
-  const outputVideoPath = path.resolve(outDir, `${folderName}.mp4`);
+  // JSONファイルの名前を元に出力ファイル名を決定する
+  const jsonBaseName = path.basename(absoluteJsonPath, '.json');
+  let outputName = jsonBaseName;
+  if (outputName.startsWith('video-config-')) {
+    outputName = outputName.replace('video-config-', '');
+  }
+  if (outputName === 'config' || outputName === 'video-config' || !outputName) {
+    outputName = path.basename(path.dirname(absoluteJsonPath));
+  }
+  const outputVideoPath = path.resolve(outDir, `${outputName}.mp4`);
   console.log(`Rendering video to: ${outputVideoPath}`);
 
   const compositionId = config.compositionId || 'MyComp';
