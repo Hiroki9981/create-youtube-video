@@ -58,8 +58,20 @@ scripts/
     download_wikipedia_page.py       ← WikipediaのHTMLをローカルにキャッシュ
   inbound-tourism/           ← インバウンド観光客推移用のスクリプト
   sushi-bar/                 ← 寿司バー用のスクリプト
+  ip-voronoi/                ← IPアドレスボロノイ用のスクリプト
   generate-video.ts          ← レンダリング実行エントリ（共通）
   upload_youtube.py          ← YouTubeアップロード用スクリプト（共通）
+src/
+  company-ranking/           ← 大企業ランキング用のコンポーネント
+    CompanyComposition.tsx
+  inbound-tourism/           ← インバウンド観光客用のコンポーネント
+    InboundComposition.tsx
+  ip-voronoi/                ← IPアドレスボロノイ用のコンポーネント
+    IpVoronoiComposition.tsx
+  sushi-bar/                 ← 寿司バー用のコンポーネント
+    Composition.tsx
+  Root.tsx                   ← 全コンポジションのエントリ（共通）
+  index.css                  ← 共通スタイル
 out/
   動画名.mp4                 ← 生成された動画ファイル（Git管理外）
 ```

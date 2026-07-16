@@ -1,0 +1,236 @@
+{
+  "companies": {
+    "NTT": {
+      "asns": [
+        "AS4713",
+        "AS2914"
+      ],
+      "color": "#004094",
+      "country": "JP",
+      "displayName": "NTT Group"
+    },
+    "SoftBank": {
+      "asns": [
+        "AS4772",
+        "AS9607",
+        "AS17676"
+      ],
+      "color": "#ffcc00",
+      "country": "JP",
+      "displayName": "SoftBank"
+    },
+    "KDDI": {
+      "asns": [
+        "AS2516"
+      ],
+      "color": "#ff6600",
+      "country": "JP",
+      "displayName": "KDDI"
+    },
+    "AWS": {
+      "asns": [
+        "AS16509"
+      ],
+      "color": "#ff9900",
+      "country": "US",
+      "displayName": "AWS"
+    },
+    "Google": {
+      "asns": [
+        "AS15169"
+      ],
+      "color": "#4285f4",
+      "country": "US",
+      "displayName": "Google"
+    },
+    "Microsoft": {
+      "asns": [
+        "AS8075"
+      ],
+      "color": "#00a4ef",
+      "country": "US",
+      "displayName": "Microsoft"
+    },
+    "Alibaba": {
+      "asns": [
+        "AS37963",
+        "AS45102"
+      ],
+      "color": "#ff6a00",
+      "country": "CN",
+      "displayName": "Alibaba"
+    },
+    "Tencent": {
+      "asns": [
+        "AS45090"
+      ],
+      "color": "#0052d9",
+      "country": "CN",
+      "displayName": "Tencent"
+    },
+    "Lumen": {
+      "asns": [
+        "AS3356",
+        "AS209"
+      ],
+      "color": "#10b981",
+      "country": "US",
+      "displayName": "Lumen"
+    },
+    "ChinaUnicom": {
+      "asns": [
+        "AS4837",
+        "AS9929"
+      ],
+      "color": "#ef4444",
+      "country": "CN",
+      "displayName": "China Unicom"
+    }
+  },
+  "history": [
+    {
+      "year": 2018,
+      "date": "2018-07-01",
+      "stats": {
+        "NTT": 36153088,
+        "SoftBank": 44951552,
+        "KDDI": 18767360,
+        "AWS": 20813568,
+        "Google": 4521984,
+        "Microsoft": 21498112,
+        "Alibaba": 6708480,
+        "Tencent": 2019328,
+        "Lumen": 59570176,
+        "ChinaUnicom": 58031616
+      }
+    },
+    {
+      "year": 2019,
+      "date": "2019-07-01",
+      "stats": {
+        "NTT": 36008448,
+        "SoftBank": 42984192,
+        "KDDI": 18447872,
+        "AWS": 26108160,
+        "Google": 8691456,
+        "Microsoft": 23528960,
+        "Alibaba": 11614976,
+        "Tencent": 2609152,
+        "Lumen": 59323648,
+        "ChinaUnicom": 58571264
+      }
+    },
+    {
+      "year": 2020,
+      "date": "2020-07-01",
+      "stats": {
+        "NTT": 35869184,
+        "SoftBank": 43537408,
+        "KDDI": 18443264,
+        "AWS": 33361152,
+        "Google": 10002176,
+        "Microsoft": 34748160,
+        "Alibaba": 10417664,
+        "Tencent": 3395584,
+        "Lumen": 59248128,
+        "ChinaUnicom": 58941184
+      }
+    },
+    {
+      "year": 2021,
+      "date": "2021-07-01",
+      "stats": {
+        "NTT": 35952128,
+        "SoftBank": 44679680,
+        "KDDI": 18366976,
+        "AWS": 39040256,
+        "Google": 14205696,
+        "Microsoft": 45829888,
+        "Alibaba": 9755136,
+        "Tencent": 4902912,
+        "Lumen": 59872256,
+        "ChinaUnicom": 58977792
+      }
+    },
+    {
+      "year": 2022,
+      "date": "2022-07-01",
+      "stats": {
+        "NTT": 35752704,
+        "SoftBank": 43712256,
+        "KDDI": 18298624,
+        "AWS": 42515712,
+        "Google": 14216192,
+        "Microsoft": 44430080,
+        "Alibaba": 10153216,
+        "Tencent": 5889536,
+        "Lumen": 50040576,
+        "ChinaUnicom": 59076864
+      }
+    },
+    {
+      "year": 2023,
+      "date": "2023-07-01",
+      "stats": {
+        "NTT": 35650048,
+        "SoftBank": 43513344,
+        "KDDI": 18233088,
+        "AWS": 44601344,
+        "Google": 10097152,
+        "Microsoft": 52383488,
+        "Alibaba": 10935296,
+        "Tencent": 5889536,
+        "Lumen": 49962496,
+        "ChinaUnicom": 59419904
+      }
+    },
+    {
+      "year": 2024,
+      "date": "2024-07-01",
+      "stats": {
+        "NTT": 35682048,
+        "SoftBank": 43607808,
+        "KDDI": 18168576,
+        "AWS": 47248128,
+        "Google": 9150976,
+        "Microsoft": 56105216,
+        "Alibaba": 14985984,
+        "Tencent": 5889536,
+        "Lumen": 49855744,
+        "ChinaUnicom": 58242816
+      }
+    },
+    {
+      "year": 2025,
+      "date": "2025-07-01",
+      "stats": {
+        "NTT": 35802368,
+        "SoftBank": 35875584,
+        "KDDI": 18036480,
+        "AWS": 167745536,
+        "Google": 1908480,
+        "Microsoft": 65628672,
+        "Alibaba": 13167104,
+        "Tencent": 5895168,
+        "Lumen": 48992256,
+        "ChinaUnicom": 58205952
+      }
+    },
+    {
+      "year": 2026,
+      "date": "2026-07-01",
+      "stats": {
+        "NTT": 34933248,
+        "SoftBank": 38341376,
+        "KDDI": 18074624,
+        "AWS": 170028032,
+        "Google": 2550016,
+        "Microsoft": 81080064,
+        "Alibaba": 14890752,
+        "Tencent": 6213888,
+        "Lumen": 48618496,
+        "ChinaUnicom": 58313984
+      }
+    }
+  ]
+}

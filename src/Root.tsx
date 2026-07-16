@@ -1,13 +1,14 @@
 import "./index.css";
 import React from "react";
 import { Composition, CalculateMetadataFunction, staticFile } from "remotion";
-import { MyComposition } from "./Composition";
-import { InboundComponent, InboundVideoProps } from "./InboundComposition";
-import { CompanyComponent, CompanyVideoProps } from "./CompanyComposition";
+import { MyComposition } from "./sushi-bar/Composition";
+import { InboundComponent } from "./inbound-tourism/InboundComposition";
+import { CompanyComponent } from "./company-ranking/CompanyComposition";
+import { IpVoronoiComposition } from "./ip-voronoi/IpVoronoiComposition";
 import { getAudioDurationInSeconds } from "@remotion/media-utils";
 
 // Calculate duration and metadata dynamically for Inbound Tourism video
-const calculateInboundMetadata: CalculateMetadataFunction<InboundVideoProps> = async ({ props }) => {
+const calculateInboundMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
   const fps = 30;
   let totalDurationFrames = 0;
   const resolvedScenes = [];
@@ -49,7 +50,7 @@ const calculateInboundMetadata: CalculateMetadataFunction<InboundVideoProps> = a
 };
 
 // Calculate duration and metadata dynamically for Company ranking video
-const calculateCompanyMetadata: CalculateMetadataFunction<CompanyVideoProps> = async ({ props }) => {
+const calculateCompanyMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
   const fps = 30;
   let totalDurationFrames = 0;
   const resolvedScenes = [];
@@ -79,6 +80,36 @@ const calculateCompanyMetadata: CalculateMetadataFunction<CompanyVideoProps> = a
   };
 };
 
+// Calculate duration and metadata dynamically for IpVoronoi video
+const calculateIpVoronoiMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
+  const fps = 30;
+  let totalDurationFrames = 0;
+  const resolvedScenes = [];
+
+  for (const scene of props.scenes || []) {
+    let durationInFrames = scene.durationInFrames;
+    if (durationInFrames === undefined) {
+      durationInFrames = 6 * fps; // Default 6 seconds per year
+    }
+    resolvedScenes.push({
+      ...scene,
+      durationInFrames
+    });
+    totalDurationFrames += durationInFrames;
+  }
+
+  return {
+    width: 1080,
+    height: 1920,
+    fps,
+    durationInFrames: totalDurationFrames,
+    props: {
+      ...props,
+      scenes: resolvedScenes,
+    }
+  };
+};
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -86,12 +117,12 @@ export const RemotionRoot: React.FC = () => {
       
       <Composition
         id="InboundVideo"
-        component={InboundComponent as React.FC<Record<string, unknown>>}
+        component={InboundComponent as React.FC<any>}
         durationInFrames={150} // Default duration, overridden by calculateInboundMetadata
         fps={30}
         width={1080}
         height={1920}
-        calculateMetadata={calculateInboundMetadata as unknown as CalculateMetadataFunction<Record<string, unknown>>}
+        calculateMetadata={calculateInboundMetadata as unknown as CalculateMetadataFunction<any>}
         defaultProps={{
           bgm: "data/inbound-tourism/inbound_bgm.wav",
           bgmVolume: 0.1,
@@ -101,12 +132,12 @@ export const RemotionRoot: React.FC = () => {
 
       <Composition
         id="CompanyVideo"
-        component={CompanyComponent as React.FC<Record<string, unknown>>}
+        component={CompanyComponent as React.FC<any>}
         durationInFrames={150} // Default duration, overridden by calculateCompanyMetadata
         fps={30}
         width={1080}
         height={1920}
-        calculateMetadata={calculateCompanyMetadata as unknown as CalculateMetadataFunction<Record<string, unknown>>}
+        calculateMetadata={calculateCompanyMetadata as unknown as CalculateMetadataFunction<any>}
         defaultProps={{
           bgm: "data/company-ranking/companies_bgm.wav",
           bgmVolume: 0.2,
@@ -115,6 +146,21 @@ export const RemotionRoot: React.FC = () => {
             flags: {},
             logos: {}
           }
+        }}
+      />
+
+      <Composition
+        id="IpVoronoi"
+        component={IpVoronoiComposition as React.FC<any>}
+        durationInFrames={150}
+        fps={30}
+        width={1080}
+        height={1920}
+        calculateMetadata={calculateIpVoronoiMetadata as unknown as CalculateMetadataFunction<any>}
+        defaultProps={{
+          title: "IPアドレス領土戦争",
+          subtitle: "IPv4アドレス保有数の推移 (2018 - 2026)",
+          scenes: []
         }}
       />
     </>

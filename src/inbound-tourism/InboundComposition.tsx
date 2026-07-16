@@ -428,7 +428,7 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
   // ── 2. Intro handling ──
   // The intro plays during the first INTRO_FRAMES of scene 0.
   // Chart progress within scene 0 is offset by INTRO_FRAMES.
-  const isInIntro = currentSceneIndex === 0 && localFrame < INTRO_FRAMES;
+  // const isInIntro = currentSceneIndex === 0 && localFrame < INTRO_FRAMES;
 
   const chartLocalFrame =
     currentSceneIndex === 0

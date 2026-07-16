@@ -9,7 +9,6 @@ import {
   spring,
   staticFile,
   useCurrentFrame,
-  useVideoConfig,
   Video,
 } from "remotion";
 import React from "react";
@@ -169,7 +168,6 @@ const SceneComponent: React.FC<{
       {scene.audio && (
         <Audio 
           src={staticFile(cleanStaticPath(scene.audio))} 
-          delay={0} // No intro delay
         />
       )}
     </div>

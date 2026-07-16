@@ -506,7 +506,7 @@ export const CompanyComponent: React.FC<CompanyVideoProps> = ({
   const localFrame = adjustedFrame - cumulativeFrames;
 
   // ── 2. Intro handling ──
-  const isInIntro = currentSceneIndex === 0 && localFrame < INTRO_FRAMES;
+  // const isInIntro = currentSceneIndex === 0 && localFrame < INTRO_FRAMES;
 
   const chartLocalFrame =
     currentSceneIndex === 0

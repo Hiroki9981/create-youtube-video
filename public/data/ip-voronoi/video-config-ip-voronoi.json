@@ -1,0 +1,57 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "bgm": "data/company-ranking/companies_bgm.wav",
+  "bgmVolume": 0.2,
+  "compositionId": "IpVoronoi",
+  "title": "IPアドレス領土戦争",
+  "subtitle": "IPv4アドレス保有数の推移 (2018 - 2026)",
+  "scenes": [
+    {
+      "year": 2018,
+      "events": "2018年: 世界的なクラウド移行が進む。AWS、Microsoft、GoogleがIPv4アドレスの確保を本格化。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2019,
+      "events": "2019年: クラウド静かに急拡大。AWSが大量のIPv4アドレスを市場取引等で追加獲得。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2020,
+      "events": "2020年: コロナ禍のテレワーク需要爆発。クラウドプロバイダ各社によるIPアドレス争奪戦が激化。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2021,
+      "events": "2021年: デジタルトランスフォーメーション(DX)の加速。クラウド各社の保有IPがキャリア水準に肉薄。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2022,
+      "events": "2022年: IPv4アドレス未割り当て在庫の枯渇が深刻化。セカンダリ取引市場での取引価格が高騰。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2023,
+      "events": "2023年: 生成AIブームの予兆。AIインフラ向けにメガクラウド各社がさらにIPアドレス獲得を強化。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2024,
+      "events": "2024年: AWSがすべてのパブリックIPv4アドレス利用の有料化を開始。IPの効率的利用へのシフトを模索。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2025,
+      "events": "2025年: 生成AIの本格普及。巨大AIデータセンターの運用に膨大なIPv4アドレスが投入される。",
+      "durationInFrames": 180
+    },
+    {
+      "year": 2026,
+      "events": "2026年: クラウドサービスがIPアドレス領土の大部分を支配。通信キャリアを上回る規模へと成長。",
+      "durationInFrames": 180
+    }
+  ]
+}
