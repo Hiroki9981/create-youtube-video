@@ -420,7 +420,7 @@ scenes_part1.append({
 
 config_part1 = {
     "compositionId": "CompanyVideo",
-    "bgm": "data/company-ranking/companies_bgm.wav",
+    "bgm": "data/audio/shining_star.mp3",
     "bgmVolume": 0.2,
     "title": "世界の大企業ランキング推移\n(Part 1)",
     "subtitle": "2000年 - 2013年",
@@ -470,7 +470,7 @@ scenes_part2.append({
 
 config_part2 = {
     "compositionId": "CompanyVideo",
-    "bgm": "data/company-ranking/companies_bgm.wav",
+    "bgm": "data/audio/shining_star.mp3",
     "bgmVolume": 0.2,
     "title": "世界の大企業ランキング推移\n(Part 2)",
     "subtitle": "2014年 - 2026年",

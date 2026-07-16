@@ -1,6 +1,6 @@
 {
   "compositionId": "CompanyVideo",
-  "bgm": "data/company-ranking/companies_bgm.wav",
+  "bgm": "data/audio/shining_star.mp3",
   "bgmVolume": 0.2,
   "title": "世界の大企業ランキング推移\n(Part 2)",
   "subtitle": "2014年 - 2026年",
@@ -443,19 +443,19 @@
   ],
   "meta": {
     "flags": {
-      "South Korea": "data/company-ranking/flags/flag_south_korea.png",
-      "Netherlands United Kingdom": "data/company-ranking/flags/flag_netherlands_united_kingdom.png",
-      "Germany": "data/company-ranking/flags/flag_germany.png",
-      "Netherlands": "data/company-ranking/flags/flag_netherlands.png",
-      "Australia": "data/company-ranking/flags/flag_australia.png",
-      "Switzerland": "data/company-ranking/flags/flag_switzerland.png",
-      "China": "data/company-ranking/flags/flag_china.png",
       "Russia": "data/company-ranking/flags/flag_russia.png",
-      "United States": "data/company-ranking/flags/flag_united_states.png",
-      "Japan": "data/company-ranking/flags/flag_japan.png",
+      "Germany": "data/company-ranking/flags/flag_germany.png",
+      "South Korea": "data/company-ranking/flags/flag_south_korea.png",
       "Taiwan": "data/company-ranking/flags/flag_taiwan.png",
+      "United Kingdom": "data/company-ranking/flags/flag_united_kingdom.png",
+      "Australia": "data/company-ranking/flags/flag_australia.png",
+      "Netherlands United Kingdom": "data/company-ranking/flags/flag_netherlands_united_kingdom.png",
+      "China": "data/company-ranking/flags/flag_china.png",
       "Brazil": "data/company-ranking/flags/flag_brazil.png",
-      "United Kingdom": "data/company-ranking/flags/flag_united_kingdom.png"
+      "United States": "data/company-ranking/flags/flag_united_states.png",
+      "Switzerland": "data/company-ranking/flags/flag_switzerland.png",
+      "Japan": "data/company-ranking/flags/flag_japan.png",
+      "Netherlands": "data/company-ranking/flags/flag_netherlands.png"
     },
     "logos": {
       "Nvidia": "data/company-ranking/logos/logo_nvidia.png",

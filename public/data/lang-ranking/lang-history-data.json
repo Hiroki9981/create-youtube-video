@@ -1,0 +1,462 @@
+{
+  "languages": {
+    "Python": {
+      "color": "#3776AB",
+      "displayName": "Python"
+    },
+    "Java": {
+      "color": "#ED8B00",
+      "displayName": "Java"
+    },
+    "C": {
+      "color": "#00599C",
+      "displayName": "C"
+    },
+    "C++": {
+      "color": "#659AD2",
+      "displayName": "C++"
+    },
+    "C#": {
+      "color": "#804180",
+      "displayName": "C#"
+    },
+    "JavaScript": {
+      "color": "#F7DF1E",
+      "displayName": "JavaScript"
+    },
+    "PHP": {
+      "color": "#777BB4",
+      "displayName": "PHP"
+    },
+    "Go": {
+      "color": "#00ADD8",
+      "displayName": "Go"
+    },
+    "Rust": {
+      "color": "#CE412B",
+      "displayName": "Rust"
+    },
+    "Objective-C": {
+      "color": "#FFAC45",
+      "displayName": "Objective-C"
+    }
+  },
+  "history": [
+    {
+      "year": 2001,
+      "date": "2001-07-01",
+      "stats": {
+        "Python": 1.5,
+        "Java": 26.0,
+        "C": 20.0,
+        "C++": 12.0,
+        "PHP": 1.0,
+        "C#": 0.0,
+        "JavaScript": 2.0,
+        "Objective-C": 0.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2002,
+      "date": "2002-07-01",
+      "stats": {
+        "Python": 2.0,
+        "Java": 25.0,
+        "C": 19.5,
+        "C++": 11.6,
+        "PHP": 2.4,
+        "C#": 0.7,
+        "JavaScript": 2.2,
+        "Objective-C": 0.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2003,
+      "date": "2003-07-01",
+      "stats": {
+        "Python": 2.5,
+        "Java": 24.0,
+        "C": 19.0,
+        "C++": 11.2,
+        "PHP": 3.8,
+        "C#": 1.4,
+        "JavaScript": 2.4,
+        "Objective-C": 0.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2004,
+      "date": "2004-07-01",
+      "stats": {
+        "Python": 3.0,
+        "Java": 23.0,
+        "C": 18.5,
+        "C++": 10.8,
+        "PHP": 5.2,
+        "C#": 2.1,
+        "JavaScript": 2.6,
+        "Objective-C": 0.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2005,
+      "date": "2005-07-01",
+      "stats": {
+        "Python": 3.5,
+        "Java": 22.0,
+        "C": 18.0,
+        "C++": 10.4,
+        "PHP": 6.6,
+        "C#": 2.8,
+        "JavaScript": 2.8,
+        "Objective-C": 0.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2006,
+      "date": "2006-07-01",
+      "stats": {
+        "Python": 4.0,
+        "Java": 21.0,
+        "C": 17.5,
+        "C++": 10.0,
+        "PHP": 8.0,
+        "C#": 3.5,
+        "JavaScript": 3.0,
+        "Objective-C": 0.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2007,
+      "date": "2007-07-01",
+      "stats": {
+        "Python": 4.4,
+        "Java": 20.4,
+        "C": 17.3,
+        "C++": 9.7,
+        "PHP": 8.2,
+        "C#": 4.0,
+        "JavaScript": 2.9,
+        "Objective-C": 1.2,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2008,
+      "date": "2008-07-01",
+      "stats": {
+        "Python": 4.8,
+        "Java": 19.8,
+        "C": 17.1,
+        "C++": 9.4,
+        "PHP": 8.4,
+        "C#": 4.5,
+        "JavaScript": 2.8,
+        "Objective-C": 2.4,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2009,
+      "date": "2009-07-01",
+      "stats": {
+        "Python": 5.2,
+        "Java": 19.2,
+        "C": 16.9,
+        "C++": 9.1,
+        "PHP": 8.6,
+        "C#": 5.0,
+        "JavaScript": 2.7,
+        "Objective-C": 3.6,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2010,
+      "date": "2010-07-01",
+      "stats": {
+        "Python": 5.6,
+        "Java": 18.6,
+        "C": 16.7,
+        "C++": 8.8,
+        "PHP": 8.8,
+        "C#": 5.5,
+        "JavaScript": 2.6,
+        "Objective-C": 4.8,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2011,
+      "date": "2011-07-01",
+      "stats": {
+        "Python": 6.0,
+        "Java": 18.0,
+        "C": 16.5,
+        "C++": 8.5,
+        "PHP": 9.0,
+        "C#": 6.0,
+        "JavaScript": 2.5,
+        "Objective-C": 6.0,
+        "Go": 0.0,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2012,
+      "date": "2012-07-01",
+      "stats": {
+        "Python": 5.8,
+        "Java": 17.6,
+        "C": 16.1,
+        "C++": 8.1,
+        "PHP": 7.8,
+        "C#": 5.7,
+        "JavaScript": 2.5,
+        "Objective-C": 5.2,
+        "Go": 0.3,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2013,
+      "date": "2013-07-01",
+      "stats": {
+        "Python": 5.6,
+        "Java": 17.2,
+        "C": 15.7,
+        "C++": 7.7,
+        "PHP": 6.6,
+        "C#": 5.4,
+        "JavaScript": 2.5,
+        "Objective-C": 4.4,
+        "Go": 0.6,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2014,
+      "date": "2014-07-01",
+      "stats": {
+        "Python": 5.4,
+        "Java": 16.8,
+        "C": 15.3,
+        "C++": 7.3,
+        "PHP": 5.4,
+        "C#": 5.1,
+        "JavaScript": 2.5,
+        "Objective-C": 3.6,
+        "Go": 0.9,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2015,
+      "date": "2015-07-01",
+      "stats": {
+        "Python": 5.2,
+        "Java": 16.4,
+        "C": 14.9,
+        "C++": 6.9,
+        "PHP": 4.2,
+        "C#": 4.8,
+        "JavaScript": 2.5,
+        "Objective-C": 2.8,
+        "Go": 1.2,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2016,
+      "date": "2016-07-01",
+      "stats": {
+        "Python": 5.0,
+        "Java": 16.0,
+        "C": 14.5,
+        "C++": 6.5,
+        "PHP": 3.0,
+        "C#": 4.5,
+        "JavaScript": 2.5,
+        "Objective-C": 2.0,
+        "Go": 1.5,
+        "Rust": 0.0
+      }
+    },
+    {
+      "year": 2017,
+      "date": "2017-07-01",
+      "stats": {
+        "Python": 6.4,
+        "Java": 15.0,
+        "C": 14.1,
+        "C++": 6.7,
+        "PHP": 2.8,
+        "C#": 4.6,
+        "JavaScript": 2.5,
+        "Objective-C": 1.7,
+        "Go": 1.44,
+        "Rust": 0.1
+      }
+    },
+    {
+      "year": 2018,
+      "date": "2018-07-01",
+      "stats": {
+        "Python": 7.8,
+        "Java": 14.0,
+        "C": 13.7,
+        "C++": 6.9,
+        "PHP": 2.6,
+        "C#": 4.7,
+        "JavaScript": 2.5,
+        "Objective-C": 1.4,
+        "Go": 1.38,
+        "Rust": 0.2
+      }
+    },
+    {
+      "year": 2019,
+      "date": "2019-07-01",
+      "stats": {
+        "Python": 9.2,
+        "Java": 13.0,
+        "C": 13.3,
+        "C++": 7.1,
+        "PHP": 2.4,
+        "C#": 4.8,
+        "JavaScript": 2.5,
+        "Objective-C": 1.1,
+        "Go": 1.32,
+        "Rust": 0.3
+      }
+    },
+    {
+      "year": 2020,
+      "date": "2020-07-01",
+      "stats": {
+        "Python": 10.6,
+        "Java": 12.0,
+        "C": 12.9,
+        "C++": 7.3,
+        "PHP": 2.2,
+        "C#": 4.9,
+        "JavaScript": 2.5,
+        "Objective-C": 0.8,
+        "Go": 1.26,
+        "Rust": 0.4
+      }
+    },
+    {
+      "year": 2021,
+      "date": "2021-07-01",
+      "stats": {
+        "Python": 12.0,
+        "Java": 11.0,
+        "C": 12.5,
+        "C++": 7.5,
+        "PHP": 2.0,
+        "C#": 5.0,
+        "JavaScript": 2.5,
+        "Objective-C": 0.5,
+        "Go": 1.2,
+        "Rust": 0.5
+      }
+    },
+    {
+      "year": 2022,
+      "date": "2022-07-01",
+      "stats": {
+        "Python": 12.7,
+        "Java": 10.5,
+        "C": 12.0,
+        "C++": 8.0,
+        "PHP": 1.96,
+        "C#": 5.36,
+        "JavaScript": 2.64,
+        "Objective-C": 0.4,
+        "Go": 1.32,
+        "Rust": 0.7
+      }
+    },
+    {
+      "year": 2023,
+      "date": "2023-07-01",
+      "stats": {
+        "Python": 13.4,
+        "Java": 10.0,
+        "C": 11.5,
+        "C++": 8.5,
+        "PHP": 1.92,
+        "C#": 5.72,
+        "JavaScript": 2.78,
+        "Objective-C": 0.3,
+        "Go": 1.44,
+        "Rust": 0.9
+      }
+    },
+    {
+      "year": 2024,
+      "date": "2024-07-01",
+      "stats": {
+        "Python": 14.1,
+        "Java": 9.5,
+        "C": 11.0,
+        "C++": 9.0,
+        "PHP": 1.88,
+        "C#": 6.08,
+        "JavaScript": 2.92,
+        "Objective-C": 0.2,
+        "Go": 1.56,
+        "Rust": 1.1
+      }
+    },
+    {
+      "year": 2025,
+      "date": "2025-07-01",
+      "stats": {
+        "Python": 14.8,
+        "Java": 9.0,
+        "C": 10.5,
+        "C++": 9.5,
+        "PHP": 1.84,
+        "C#": 6.44,
+        "JavaScript": 3.06,
+        "Objective-C": 0.1,
+        "Go": 1.68,
+        "Rust": 1.3
+      }
+    },
+    {
+      "year": 2026,
+      "date": "2026-07-01",
+      "stats": {
+        "Python": 15.5,
+        "Java": 8.5,
+        "C": 10.0,
+        "C++": 10.0,
+        "PHP": 1.8,
+        "C#": 6.8,
+        "JavaScript": 3.2,
+        "Objective-C": 0.0,
+        "Go": 1.8,
+        "Rust": 1.5
+      }
+    }
+  ]
+}

@@ -237,7 +237,7 @@ scenes.append({
 # Construct complete video configuration JSON
 config = {
     "compositionId": "CompanyVideo",
-    "bgm": "data/company-ranking/companies_bgm.wav",
+    "bgm": "data/audio/shining_star.mp3",
     "bgmVolume": 0.2,
     "scenes": scenes
 }

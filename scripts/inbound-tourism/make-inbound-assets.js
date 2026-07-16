@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-const targetDir = path.join(__dirname, '..', 'public', 'data', 'inbound-tourism');
+const targetDir = path.join(__dirname, '..', '..', 'public', 'data', 'inbound-tourism');
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
 }
@@ -114,10 +114,18 @@ async function generateAll() {
   }
 
   // 2. Generate BGM
-  const bgmDest = path.join(targetDir, 'inbound_bgm.wav');
-  const bgmBuffer = createWavBuffer(120, 220); // 120s low tone
-  fs.writeFileSync(bgmDest, bgmBuffer);
-  console.log(`Generated BGM WAV: ${bgmDest}`);
+  const audioDir = path.join(targetDir, '..', 'audio');
+  if (!fs.existsSync(audioDir)) {
+    fs.mkdirSync(audioDir, { recursive: true });
+  }
+  const bgmDest = path.join(audioDir, 'shining_star.mp3');
+  if (!fs.existsSync(bgmDest)) {
+    const bgmBuffer = createWavBuffer(120, 220); // 120s low tone
+    fs.writeFileSync(bgmDest, bgmBuffer);
+    console.log(`Generated BGM WAV as fallback: ${bgmDest}`);
+  } else {
+    console.log(`BGM (shining_star.mp3) already exists. Skipping fallback generation.`);
+  }
 
   console.log('All inbound tourism audio assets prepared successfully.');
 }

@@ -2,7 +2,7 @@
   "width": 1080,
   "height": 1920,
   "fps": 30,
-  "bgm": "data/inbound-tourism/maou_inst_short_14_shining_star.mp3",
+  "bgm": "data/audio/shining_star.mp3",
   "bgmVolume": 0.15,
   "compositionId": "InboundVideo",
   "scenes": [

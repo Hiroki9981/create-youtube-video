@@ -1,0 +1,142 @@
+{
+  "compositionId": "LangVoronoi",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "bgm": "data/audio/8-bit_Aggressive1.mp3",
+  "bgmVolume": 0.15,
+  "title": "プログラミング言語の覇権争い",
+  "subtitle": "主要言語の人気シェア推移 (2001 - 2026)",
+  "scenes": [
+    {
+      "year": 2001,
+      "events": "JavaとCの二強時代。PHPやJavaScriptがWebの普及と共に徐々にシェアを拡大する。",
+      "durationInFrames": 150
+    },
+    {
+      "year": 2002,
+      "events": "C#の登場。MicrosoftがJavaに対抗して開発したオブジェクト指向言語が始動。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2003,
+      "events": "Javaが企業システムで絶対的覇権を握る。C言語は組み込み開発で安定した人気。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2004,
+      "events": "PHP5のリリース。オブジェクト指向機能が大幅強化され、Web開発のデファクトへ。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2005,
+      "events": "Ruby on Railsの流行によりWeb開発にパラダイムシフト。LL言語全体が注目される。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2006,
+      "events": "JavaScriptがAjaxの登場により「再評価」。リッチなWebアプリ時代へ。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2007,
+      "events": "Javaのオープンソース化完了。コミュニティ主導の開発がさらに加速。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2008,
+      "events": "iPhone 3Gの発売とApp Store開始。Objective-Cがモバイルアプリ市場で躍進開始。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2009,
+      "events": "Node.jsの誕生。JavaScriptがサーバーサイドへ進出し、JSの適用範囲が激変。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2010,
+      "events": "Objective-CがTIOBE Indexトップ10圏内に突入。スマートフォン開発が爆発的成長。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2011,
+      "events": "Objective-CがTIOBE『Language of the Year』を獲得。JavaやCの牙城に迫る。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2012,
+      "events": "JavaとCのシェア首位争い。スマートフォン市場の拡大でObjective-Cがシェアピークへ。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2013,
+      "events": "データサイエンスや機械学習の台頭により、シンプルで書きやすいPythonの人気が再加速。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2014,
+      "events": "AppleがSwiftを発表。Objective-Cからの緩やかな移行が始まる。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2015,
+      "events": "ECMAScript 6 (ES6) の策定。モダンなJavaScript開発手法が標準化される。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2016,
+      "events": "Go言語が『Language of the Year』に。クラウド・コンテナ時代のインフラ言語へ躍進。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2017,
+      "events": "AI・ディープラーニング・データ分析ブーム。Pythonが理化学分野から産業界へ浸透。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2018,
+      "events": "PythonがJavaとCに次ぐ第3位に浮上。教育やAI開発での採用が決定打に。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2019,
+      "events": "Javaの商用サポート有料化に伴う移行。OpenJDKの普及が進む。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2020,
+      "events": "コロナ禍におけるオンライン需要の急増。WebサービスやAIインフラ投資が加速。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2021,
+      "events": "Pythonが初の首位を獲得。約20年間続いたJavaとCの二強体制が崩壊。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2022,
+      "events": "PythonがAI・データ分析分野で事実上の標準言語に。さらにシェアを引き離す。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2023,
+      "events": "ChatGPTを代表とする生成AI・LLM開発ブーム。Pythonのライブラリ群がデファクトに。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2024,
+      "events": "メモリ安全性を重視するセキュリティ意識の高まり。Rustが注目を集める。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2025,
+      "events": "生成AIを活用したローコード・開発効率化の進展。Python首位継続。",
+      "durationInFrames": 60
+    },
+    {
+      "year": 2026,
+      "events": "RustがTIOBE Index初のトップ10入りを果たす。Pythonは不動の王座を確立。",
+      "durationInFrames": 120
+    }
+  ]
+}

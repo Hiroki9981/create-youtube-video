@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { useCurrentFrame, Audio, staticFile, interpolate, spring, Img, useVideoConfig } from "remotion";
-import ipData from "../../public/data/ip-voronoi/ip-history-data.json";
+import langData from "../../public/data/lang-ranking/lang-history-data.json";
 
 // Types
 export interface SceneConfig {
@@ -9,7 +9,7 @@ export interface SceneConfig {
   durationInFrames: number;
 }
 
-export interface IpVoronoiCompositionProps {
+export interface LangVoronoiCompositionProps {
   title?: string;
   subtitle?: string;
   scenes?: SceneConfig[];
@@ -76,13 +76,13 @@ const OutroOverlay: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) 
 
         <div
           style={{
-            background: "linear-gradient(135deg, #34d399 0%, #059669 100%)",
+            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             fontSize: 64,
             fontWeight: 900,
             lineHeight: 1.4,
-            filter: "drop-shadow(0 0 40px rgba(52, 211, 153, 0.4))",
+            filter: "drop-shadow(0 0 40px rgba(16, 185, 129, 0.4))",
             fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
           }}
         >
@@ -113,32 +113,47 @@ const OutroOverlay: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) 
   );
 };
 
-export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
-  title = "IPアドレス領土戦争",
-  subtitle = "IPv4アドレス保有数の推移 (2018 - 2026)",
+const getLogoFilename = (langName: string): string => {
+  const mapping: Record<string, string> = {
+    "Python": "python.svg",
+    "Java": "java.svg",
+    "C": "c.svg",
+    "C++": "cpp.svg",
+    "C#": "csharp.svg",
+    "JavaScript": "javascript.svg",
+    "PHP": "php.svg",
+    "Go": "go.svg",
+    "Rust": "rust.svg",
+    "Objective-C": "objectivec.svg"
+  };
+  return mapping[langName] || "python.svg";
+};
+
+export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
+  title = "プログラミング言語の覇権争い",
+  subtitle = "主要言語の人気シェア推移 (2001 - 2026)",
   scenes = [],
 }) => {
   const frame = useCurrentFrame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { fps } = useVideoConfig();
 
-
   // Configuration for anchors in 70x70 grid
-  // Placed logically: Telcos (JP) on Left, Cloud (US) on Right, Tech (CN) in Center
   const ANCHORS: Record<string, { x: number; y: number }> = {
-    KDDI: { x: 12, y: 15 },
-    NTT: { x: 12, y: 35 },
-    SoftBank: { x: 12, y: 55 },
-    Alibaba: { x: 27, y: 15 },
-    ChinaUnicom: { x: 27, y: 35 },
-    Tencent: { x: 27, y: 55 },
-    Lumen: { x: 42, y: 35 },
-    Google: { x: 58, y: 15 },
-    AWS: { x: 58, y: 35 },
-    Microsoft: { x: 58, y: 55 },
+    C: { x: 12, y: 15 },
+    "C++": { x: 12, y: 35 },
+    Rust: { x: 12, y: 55 },
+    Java: { x: 30, y: 15 },
+    "C#": { x: 30, y: 35 },
+    PHP: { x: 30, y: 55 },
+    Go: { x: 48, y: 15 },
+    Python: { x: 58, y: 35 },
+    JavaScript: { x: 48, y: 55 },
+    "Objective-C": { x: 42, y: 35 }
   };
 
   const GRID_SIZE = 70; // Resolution of canvas calculation grid
+  const MAP_SIZE = 640; // Pixel size of display area
 
   // 1. Calculate current scene and progress
   let accumulatedFrames = 0;
@@ -164,30 +179,28 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
   const nextScene = scenes[sceneIndex + 1] || currentScene;
   const progress = sceneFrame / currentScene.durationInFrames;
 
-  // Interpolate IP counts for current frame
+  // Interpolate language shares for current frame
   const currentYearStats =
-    ipData.history.find((h: any) => h.year === currentScene.year)?.stats || {};
+    langData.history.find((h: any) => h.year === currentScene.year)?.stats || {};
   const nextYearStats =
-    ipData.history.find((h: any) => h.year === nextScene.year)?.stats || {};
+    langData.history.find((h: any) => h.year === nextScene.year)?.stats || {};
 
   const interpolatedStats: Record<string, number> = {};
-  const companyList = Object.keys(ipData.companies).map((name) => {
+  const companyList = Object.keys(langData.languages).map((name) => {
     const startVal = (currentYearStats as Record<string, number>)[name] || 0;
     const endVal = (nextYearStats as Record<string, number>)[name] || startVal;
     const val = startVal + (endVal - startVal) * progress;
     interpolatedStats[name] = val;
 
-    // Weight formula: perceptual scaling (power of 0.7) to avoid giant AWS swallowing others
-    // Scaled to match the squared distances on a 70x70 grid
-    const weight = Math.pow(val, 0.7) * 0.0055;
+    // Weight formula: perceptual scaling (power of 0.7) to avoid Java/Python swallowing others
+    const weight = Math.pow(val, 0.7) * 0.055;
 
     return {
       name,
-      ipCount: val,
+      ipCount: val, // Represents % share
       weight,
-      color: (ipData.companies as any)[name].color,
-      displayName: (ipData.companies as any)[name].displayName,
-      country: (ipData.companies as any)[name].country,
+      color: (langData.languages as any)[name].color,
+      displayName: (langData.languages as any)[name].displayName,
       x: ANCHORS[name].x,
       y: ANCHORS[name].y,
     };
@@ -201,34 +214,38 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
 
   for (let y = 0; y < GRID_SIZE; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
-      let minD = Infinity;
-      let minId = 0;
+      let minDistSq = Infinity;
+      let closestId = 0;
+
       for (let i = 0; i < companyList.length; i++) {
-        const node = companyList[i];
-        const dx = x - node.x;
-        const dy = y - node.y;
-        const d = dx * dx + dy * dy - node.weight;
-        if (d < minD) {
-          minD = d;
-          minId = i;
+        const c = companyList[i];
+        if (c.ipCount <= 0.01) continue; // Inactive languages don't show up
+
+        const dx = x - c.x;
+        const dy = y - c.y;
+        const distSq = dx * dx + dy * dy - c.weight; // Multiplicatively weighted Voronoi
+
+        if (distSq < minDistSq) {
+          minDistSq = distSq;
+          closestId = i;
         }
       }
-      grid[y * GRID_SIZE + x] = minId;
-      sumsX[minId] += x;
-      sumsY[minId] += y;
-      counts[minId]++;
+
+      const gridIdx = y * GRID_SIZE + x;
+      grid[gridIdx] = closestId;
+      sumsX[closestId] += x;
+      sumsY[closestId] += y;
+      counts[closestId] += 1;
     }
   }
 
-  // Container dimensions (render size of Voronoi map)
-  const MAP_SIZE = 840;
-
-  // Calculate centroids
+  // Centroids mapping
   const centroids = companyList.map((node, i) => {
-    if (counts[i] > 100) {
+    const count = counts[i];
+    if (count > 4) {
       return {
-        x: (sumsX[i] / counts[i]) * (MAP_SIZE / GRID_SIZE),
-        y: (sumsY[i] / counts[i]) * (MAP_SIZE / GRID_SIZE),
+        x: (sumsX[i] / count) * (MAP_SIZE / GRID_SIZE),
+        y: (sumsY[i] / count) * (MAP_SIZE / GRID_SIZE),
         active: true,
       };
     }
@@ -285,8 +302,9 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
   const maxIpInChart = Math.max(...companyList.map((c) => c.ipCount));
 
   // Audio track registration
-  const bgmFile = staticFile("data/audio/shining_star.mp3");
+  const bgmFile = staticFile("data/audio/8-bit_Aggressive1.mp3");
 
+  // Frame 0 shows the custom flashy thumbnail (for mobile YouTube Shorts thumbnail selection)
   if (frame === 0) {
     return (
       <div
@@ -345,7 +363,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
             zIndex: 10,
           }}
         >
-          IP BATTLEFIELD
+          TIOBE INDEX HISTORICAL
         </div>
 
         {/* Main Title */}
@@ -362,7 +380,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
             whiteSpace: "pre-wrap",
           }}
         >
-          IPアドレス領土戦争
+          プログラミング言語<br />覇権の歴史
         </h1>
 
         {/* Subtitle */}
@@ -375,7 +393,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
             textShadow: "0 5px 15px rgba(0,0,0,0.6)",
           }}
         >
-          IPv4アドレス保有数の推移 (2018 - 2026)
+          人気シェア推移 (2001 - 2026)
         </div>
 
         {/* Bottom accent line */}
@@ -435,7 +453,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
           height: "800px",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(66, 133, 244, 0.1) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)",
           top: "10%",
           left: "-10%",
           zIndex: 0,
@@ -455,22 +473,6 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
         }}
       />
 
-      {/* SVG Metaball filter definition */}
-      <svg style={{ position: "absolute", width: 0, height: 0 }}>
-        <defs>
-          <filter id="metaball">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
-            <feColorMatrix
-              in="blur"
-              mode="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"
-              result="goo"
-            />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-          </filter>
-        </defs>
-      </svg>
-
       {/* Audio Element */}
       <Audio src={bgmFile} volume={0.15} loop />
 
@@ -488,7 +490,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
             fontSize: "22px",
             fontWeight: 600,
             letterSpacing: "4px",
-            color: "#4285f4",
+            color: "#10b981",
             textTransform: "uppercase",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
             marginBottom: "24px",
@@ -499,12 +501,12 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
               width: "12px",
               height: "12px",
               borderRadius: "50%",
-              backgroundColor: "#ff3366",
+              backgroundColor: "#10b981",
               marginRight: "16px",
-              boxShadow: "0 0 10px #ff3366",
+              boxShadow: "0 0 10px #10b981",
             }}
           />
-          IPv4 BATTLEFIELD
+          LANG BATTLEFIELD
         </div>
 
         <h1
@@ -559,30 +561,6 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
           }}
         />
 
-        {/* Digital compass points */}
-        <div
-          style={{
-            position: "absolute",
-            top: 2,
-            fontSize: "18px",
-            fontWeight: 700,
-            color: "rgba(255, 255, 255, 0.3)",
-          }}
-        >
-          N 0.0.0.0
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            bottom: 2,
-            fontSize: "18px",
-            fontWeight: 700,
-            color: "rgba(255, 255, 255, 0.3)",
-          }}
-        >
-          S 255.255.255.255
-        </div>
-
         {/* The Voronoi Canvas wrapper with metaball goo filter */}
         <div
           style={{
@@ -612,12 +590,8 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
           const centroid = centroids[i];
           if (!centroid || !centroid.active) return null;
 
-          // Load flag and logo dynamically
-          const flagPath = staticFile(
-            `data/ip-voronoi/flags/${company.country.toLowerCase()}.png`
-          );
           const logoPath = staticFile(
-            `data/ip-voronoi/logos/${company.name.toLowerCase()}.png`
+            `data/lang-ranking/logos/${getLogoFilename(company.name)}`
           );
 
           return (
@@ -667,8 +641,8 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
                   <img
                     src={logoPath}
                     style={{
-                      width: "80%",
-                      height: "80%",
+                      width: "70%",
+                      height: "70%",
                       objectFit: "contain",
                     }}
                     alt=""
@@ -699,16 +673,6 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
                     >
                       {company.displayName}
                     </span>
-                    <img
-                      src={flagPath}
-                      style={{
-                        width: "18px",
-                        height: "12px",
-                        borderRadius: "2px",
-                        objectFit: "cover",
-                      }}
-                      alt=""
-                    />
                   </div>
                   <span
                     style={{
@@ -717,7 +681,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
                       fontWeight: 600,
                     }}
                   >
-                    {(company.ipCount / 1_000_000).toFixed(1)}M IPs
+                    {company.ipCount.toFixed(1)}% Share
                   </span>
                 </div>
               </div>
@@ -774,54 +738,60 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
         {/* Left red dot bar */}
         <div
           style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
             width: "6px",
-            height: "100%",
-            backgroundColor: "#4285f4",
+            height: "40px",
+            backgroundColor: "#ef4444",
+            borderRadius: "3px",
+            marginRight: "20px",
+            boxShadow: "0 0 10px #ef4444",
           }}
         />
+
         <p
           style={{
-            fontSize: "26px",
-            lineHeight: "38px",
-            margin: 0,
-            fontWeight: 500,
+            fontSize: "24px",
+            lineHeight: "1.4",
             color: "#e5e7eb",
+            fontWeight: 500,
+            margin: 0,
+            fontFamily: "'Noto Sans JP', sans-serif",
           }}
         >
           {currentScene.events}
         </p>
       </div>
 
-      {/* STATS CHART & RANKING */}
+      {/* BOTTOM SECTION: LEADERBOARD CHART */}
       <div
         style={{
-          background: "rgba(10, 11, 15, 0.5)",
-          border: "1px solid rgba(255, 255, 255, 0.05)",
-          borderRadius: "24px",
-          padding: "32px",
-          height: "440px",
-          boxSizing: "border-box",
+          background: "rgba(255,255,255,0.01)",
+          border: "1px solid rgba(255,255,255,0.04)",
+          borderRadius: "32px",
+          padding: "30px 40px",
           zIndex: 10,
-          position: "relative",
         }}
       >
-        <h3
+        <div
           style={{
-            fontSize: "24px",
-            fontWeight: 800,
-            margin: "0 0 24px 0",
-            letterSpacing: "1px",
-            color: "#9ca3af",
             display: "flex",
             justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
           }}
         >
-          <span>IPアドレス保有数ランキング</span>
-          <span style={{ color: "#34d399", fontSize: "20px" }}>単位: 100万IP</span>
-        </h3>
+          <h3
+            style={{
+              fontSize: "24px",
+              fontWeight: 800,
+              color: "#9ca3af",
+              margin: 0,
+              letterSpacing: "2px",
+            }}
+          >
+            TOP 8 LANGUAGES
+          </h3>
+          <span style={{ fontSize: "18px", fontWeight: 700, color: "#10b981" }}>TIOBE INDEX SHARE</span>
+        </div>
 
         {/* The Bar Chart list */}
         <div style={{ position: "relative", height: "320px" }}>
@@ -829,15 +799,14 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
             const sortedIndex = sortedCompanies.findIndex(
               (c) => c.name === company.name
             );
+            if (sortedIndex >= 8) return null; // Show top 8 languages only
+
             const rowHeight = 40;
             const barWidthMax = 580; // pixels
             const barWidth = (company.ipCount / maxIpInChart) * barWidthMax;
 
-            const flagPath = staticFile(
-              `data/ip-voronoi/flags/${company.country.toLowerCase()}.png`
-            );
             const logoPath = staticFile(
-              `data/ip-voronoi/logos/${company.name.toLowerCase()}.png`
+              `data/lang-ranking/logos/${getLogoFilename(company.name)}`
             );
 
             return (
@@ -860,30 +829,17 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
                     width: "30px",
                     fontSize: "18px",
                     fontWeight: 800,
-                    color: sortedIndex < 3 ? "#34d399" : "#6b7280",
+                    color: sortedIndex < 3 ? "#10b981" : "#6b7280",
                     textAlign: "center",
                   }}
                 >
                   {sortedIndex + 1}
                 </div>
 
-                {/* Flag */}
-                <img
-                  src={flagPath}
-                  style={{
-                    width: "28px",
-                    height: "18px",
-                    borderRadius: "2px",
-                    marginLeft: "10px",
-                    objectFit: "cover",
-                  }}
-                  alt=""
-                />
-
                 {/* Name */}
                 <div
                   style={{
-                    width: "140px",
+                    width: "160px",
                     fontSize: "18px",
                     fontWeight: 700,
                     color: "#ffffff",
@@ -942,7 +898,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
                     fontFamily: "monospace",
                   }}
                 >
-                  {(company.ipCount / 1_000_000).toFixed(1)}M
+                  {company.ipCount.toFixed(1)}%
                 </div>
               </div>
             );
@@ -963,7 +919,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
           }}
         >
           <span style={{ color: "#475569", fontSize: 16, fontWeight: 700, fontFamily: "'Inter', 'Noto Sans JP', sans-serif" }}>
-            データ出典: RIPEstat / 各社公開IP範囲
+            データ出典: TIOBE Index
           </span>
           <span style={{ color: "#475569", fontSize: 16, fontWeight: 700, fontFamily: "'Inter', 'Noto Sans JP', sans-serif" }}>
             VISUALIZED WITH REMOTION

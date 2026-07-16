@@ -5,7 +5,11 @@ import { MyComposition } from "./sushi-bar/Composition";
 import { InboundComponent } from "./inbound-tourism/InboundComposition";
 import { CompanyComponent } from "./company-ranking/CompanyComposition";
 import { IpVoronoiComposition } from "./ip-voronoi/IpVoronoiComposition";
+import { LangVoronoiComposition } from "./lang-ranking/LangVoronoiComposition";
 import { getAudioDurationInSeconds } from "@remotion/media-utils";
+import ipVoronoiConfig from "../public/data/ip-voronoi/video-config-ip-voronoi.json";
+import langConfig from "../public/data/lang-ranking/video-config-lang-ranking.json";
+import inboundConfig from "../public/data/inbound-tourism/video-config-inbound-tourism.json";
 
 // Calculate duration and metadata dynamically for Inbound Tourism video
 const calculateInboundMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
@@ -13,7 +17,7 @@ const calculateInboundMetadata: CalculateMetadataFunction<any> = async ({ props 
   let totalDurationFrames = 0;
   const resolvedScenes = [];
 
-  for (const scene of props.scenes) {
+  for (const scene of props.scenes || []) {
     let durationInFrames = scene.durationInFrames;
     if (durationInFrames === undefined) {
       if (scene.audio) {
@@ -110,6 +114,36 @@ const calculateIpVoronoiMetadata: CalculateMetadataFunction<any> = async ({ prop
   };
 };
 
+// Calculate duration and metadata dynamically for LangVoronoi video
+const calculateLangVoronoiMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
+  const fps = 30;
+  let totalDurationFrames = 0;
+  const resolvedScenes = [];
+
+  for (const scene of props.scenes || []) {
+    let durationInFrames = scene.durationInFrames;
+    if (durationInFrames === undefined) {
+      durationInFrames = 6 * fps;
+    }
+    resolvedScenes.push({
+      ...scene,
+      durationInFrames
+    });
+    totalDurationFrames += durationInFrames;
+  }
+
+  return {
+    width: 1080,
+    height: 1920,
+    fps,
+    durationInFrames: totalDurationFrames,
+    props: {
+      ...props,
+      scenes: resolvedScenes,
+    }
+  };
+};
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -123,11 +157,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         calculateMetadata={calculateInboundMetadata as unknown as CalculateMetadataFunction<any>}
-        defaultProps={{
-          bgm: "data/inbound-tourism/inbound_bgm.wav",
-          bgmVolume: 0.1,
-          scenes: []
-        }}
+        defaultProps={inboundConfig as any}
       />
 
       <Composition
@@ -139,7 +169,7 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         calculateMetadata={calculateCompanyMetadata as unknown as CalculateMetadataFunction<any>}
         defaultProps={{
-          bgm: "data/company-ranking/companies_bgm.wav",
+          bgm: "data/audio/shining_star.mp3",
           bgmVolume: 0.2,
           scenes: [],
           meta: {
@@ -157,11 +187,18 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         calculateMetadata={calculateIpVoronoiMetadata as unknown as CalculateMetadataFunction<any>}
-        defaultProps={{
-          title: "IPアドレス領土戦争",
-          subtitle: "IPv4アドレス保有数の推移 (2018 - 2026)",
-          scenes: []
-        }}
+        defaultProps={ipVoronoiConfig as any}
+      />
+
+      <Composition
+        id="LangVoronoi"
+        component={LangVoronoiComposition as React.FC<any>}
+        durationInFrames={150}
+        fps={30}
+        width={1080}
+        height={1920}
+        calculateMetadata={calculateLangVoronoiMetadata as unknown as CalculateMetadataFunction<any>}
+        defaultProps={langConfig as any}
       />
     </>
   );
