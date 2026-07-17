@@ -192,8 +192,9 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
     const val = startVal + (endVal - startVal) * progress;
     interpolatedStats[name] = val;
 
-    // Weight formula: perceptual scaling (power of 0.7) to avoid Java/Python swallowing others
-    const weight = Math.pow(val, 0.7) * 0.055;
+    // Weight formula for Multiplicative Voronoi: perceptual scaling (power of 0.65)
+    // To prevent division by zero or negative weights
+    const weight = val > 0 ? Math.pow(val, 0.65) : 1e-10;
 
     return {
       name,
@@ -206,7 +207,7 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
     };
   });
 
-  // Calculate grid and centroids
+  // Calculate grid and centroids using Multiplicative Voronoi
   const grid = new Int32Array(GRID_SIZE * GRID_SIZE);
   const sumsX = new Float32Array(companyList.length);
   const sumsY = new Float32Array(companyList.length);
@@ -214,8 +215,8 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
 
   for (let y = 0; y < GRID_SIZE; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
-      let minDistSq = Infinity;
-      let closestId = 0;
+      let minD = Infinity;
+      let minId = 0;
 
       for (let i = 0; i < companyList.length; i++) {
         const c = companyList[i];
@@ -223,26 +224,27 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
 
         const dx = x - c.x;
         const dy = y - c.y;
-        const distSq = dx * dx + dy * dy - c.weight; // Multiplicatively weighted Voronoi
+        // Multiplicative Voronoi distance: dist^2 / weight
+        const d = (dx * dx + dy * dy) / c.weight;
 
-        if (distSq < minDistSq) {
-          minDistSq = distSq;
-          closestId = i;
+        if (d < minD) {
+          minD = d;
+          minId = i;
         }
       }
 
       const gridIdx = y * GRID_SIZE + x;
-      grid[gridIdx] = closestId;
-      sumsX[closestId] += x;
-      sumsY[closestId] += y;
-      counts[closestId] += 1;
+      grid[gridIdx] = minId;
+      sumsX[minId] += x;
+      sumsY[minId] += y;
+      counts[minId] += 1;
     }
   }
 
   // Centroids mapping
   const centroids = companyList.map((node, i) => {
     const count = counts[i];
-    if (count > 4) {
+    if (count > 15) {
       return {
         x: (sumsX[i] / count) * (MAP_SIZE / GRID_SIZE),
         y: (sumsY[i] / count) * (MAP_SIZE / GRID_SIZE),
@@ -311,12 +313,12 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
         style={{
           width: 1080,
           height: 1920,
-          background: "#0a0a0f",
+          background: "#080810",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+          fontFamily: "'Outfit', 'Inter', 'Noto Sans JP', sans-serif",
           position: "relative",
           overflow: "hidden",
         }}
@@ -334,84 +336,435 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
             height: "100%",
             objectFit: "cover",
             zIndex: 0,
+            transform: "scale(1.05)",
           }}
         />
 
-        {/* Dark overlay to ensure text contrast */}
+        {/* Cyber Grid Overlay */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(to bottom, rgba(10,10,15,0.4) 0%, rgba(10,10,15,0.75) 100%)",
+            backgroundImage:
+              "linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+            backgroundPosition: "center",
+            pointerEvents: "none",
             zIndex: 1,
           }}
         />
 
-        {/* Thumbnail Badge */}
+        {/* Dark Vignette and Gradient Overlay */}
         <div
           style={{
-            background: "linear-gradient(135deg, #10b981, #ff9900)",
-            padding: "14px 40px",
-            borderRadius: 50,
-            color: "#ffffff",
-            fontSize: 34,
-            fontWeight: 800,
-            letterSpacing: 2,
-            marginBottom: 50,
-            boxShadow: "0 10px 30px rgba(16, 185, 129, 0.6)",
-            textTransform: "uppercase",
-            zIndex: 10,
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(circle at center, rgba(10,10,20,0.2) 0%, rgba(5,5,10,0.85) 100%)",
+            zIndex: 2,
+          }}
+        />
+
+        {/* Floating Language Logos as visual anchor with Speech Bubbles */}
+        {/* Floating Language Logos as visual anchor with Speech Bubbles */}
+        {/* Python (Top-Left) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "15%",
+            left: "16%",
+            width: "130px",
+            height: "130px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 15px 35px rgba(59, 130, 246, 0.4), 0 0 15px rgba(59, 130, 246, 0.2)",
+            border: "4px solid #3b82f6",
+            transform: "rotate(-12deg)",
+            zIndex: 3,
+            opacity: 0.9,
           }}
         >
-          TIOBE INDEX HISTORICAL
+          <img
+            src={staticFile("data/lang-ranking/logos/python.svg")}
+            style={{ width: "70%", height: "70%", objectFit: "contain" }}
+            alt=""
+          />
         </div>
 
-        {/* Main Title */}
-        <h1
-          style={{
-            fontSize: 72,
-            fontWeight: 900,
-            color: "#ffffff",
-            textAlign: "center",
-            lineHeight: 1.25,
-            margin: "0 0 30px 0",
-            zIndex: 10,
-            textShadow: "0 10px 40px rgba(0,0,0,0.8)",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          プログラミング言語<br />覇権の歴史
-        </h1>
-
-        {/* Subtitle */}
+        {/* Python Speech Bubble */}
         <div
           style={{
-            fontSize: 32,
-            color: "#cbd5e1",
-            fontWeight: 700,
+            position: "absolute",
+            top: "23.5%",
+            left: "16%",
+            backgroundColor: "#ffe600",
+            border: "4px solid #3b82f6",
+            borderRadius: "16px",
+            padding: "8px 16px",
+            color: "#000000",
+            fontSize: "26px",
+            fontWeight: 900,
+            zIndex: 4,
+            boxShadow: "0 10px 25px rgba(59, 130, 246, 0.4), 0 0 15px rgba(255, 230, 0, 0.3)",
+            whiteSpace: "nowrap",
+            transform: "rotate(-2deg)",
+            textShadow: "none",
+          }}
+        >
+          Pythonが完全独占！
+          {/* Tail (pointing up to logo) */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-15px",
+              left: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderBottom: "15px solid #3b82f6",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "-10px",
+              left: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderBottom: "15px solid #ffe600",
+            }}
+          />
+        </div>
+
+        {/* JavaScript (Bottom-Right) */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "17%",
+            right: "16%",
+            width: "130px",
+            height: "130px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 15px 35px rgba(234, 179, 8, 0.4), 0 0 15px rgba(234, 179, 8, 0.2)",
+            border: "4px solid #eab308",
+            transform: "rotate(10deg)",
+            zIndex: 3,
+            opacity: 0.9,
+          }}
+        >
+          <img
+            src={staticFile("data/lang-ranking/logos/javascript.svg")}
+            style={{ width: "70%", height: "70%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* JavaScript Speech Bubble */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "25.5%",
+            right: "16%",
+            backgroundColor: "#080810",
+            border: "4px solid #eab308",
+            borderRadius: "16px",
+            padding: "8px 16px",
+            color: "#eab308",
+            fontSize: "26px",
+            fontWeight: 900,
+            zIndex: 4,
+            boxShadow: "0 10px 25px rgba(234, 179, 8, 0.4), 0 0 15px rgba(8, 8, 16, 0.5)",
+            whiteSpace: "nowrap",
+            transform: "rotate(2deg)",
+            textShadow: "none",
+          }}
+        >
+          JSが猛追する！
+          {/* Tail (pointing down to logo) */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-15px",
+              right: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderTop: "15px solid #eab308",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-10px",
+              right: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderTop: "15px solid #080810",
+            }}
+          />
+        </div>
+
+        {/* C (Bottom-Left) */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "17%",
+            left: "16%",
+            width: "130px",
+            height: "130px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 15px 35px rgba(239, 68, 68, 0.4), 0 0 15px rgba(239, 68, 68, 0.2)",
+            border: "4px solid #ef4444",
+            transform: "rotate(-8deg)",
+            zIndex: 3,
+            opacity: 0.85,
+          }}
+        >
+          <img
+            src={staticFile("data/lang-ranking/logos/c.svg")}
+            style={{ width: "70%", height: "70%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* C Speech Bubble */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "25.5%",
+            left: "16%",
+            backgroundColor: "#00f0ff",
+            border: "4px solid #080810",
+            borderRadius: "16px",
+            padding: "8px 16px",
+            color: "#080810",
+            fontSize: "26px",
+            fontWeight: 900,
+            zIndex: 4,
+            boxShadow: "0 10px 25px rgba(0, 240, 255, 0.4)",
+            whiteSpace: "nowrap",
+            transform: "rotate(-2deg)",
+          }}
+        >
+          古参Cの逆襲!?
+          {/* Tail (pointing down to logo) */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-15px",
+              left: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderTop: "15px solid #080810",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-10px",
+              left: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderTop: "15px solid #00f0ff",
+            }}
+          />
+        </div>
+        {/* Java (Top-Right) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "15%",
+            right: "16%",
+            width: "130px",
+            height: "130px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 15px 35px rgba(249, 115, 22, 0.4), 0 0 15px rgba(249, 115, 22, 0.2)",
+            border: "4px solid #f97316",
+            transform: "rotate(10deg)",
+            zIndex: 3,
+            opacity: 0.9,
+          }}
+        >
+          <img
+            src={staticFile("data/lang-ranking/logos/java.svg")}
+            style={{ width: "70%", height: "70%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* Java Speech Bubble */}
+        <div
+          style={{
+            position: "absolute",
+            top: "23.5%",
+            right: "16%",
+            backgroundColor: "#f97316",
+            border: "4px solid #ffffff",
+            borderRadius: "16px",
+            padding: "8px 16px",
+            color: "#ffffff",
+            fontSize: "26px",
+            fontWeight: 900,
+            zIndex: 4,
+            boxShadow: "0 10px 25px rgba(249, 115, 22, 0.5)",
+            whiteSpace: "nowrap",
+            transform: "rotate(2deg)",
+          }}
+        >
+          絶対王者 Java
+          {/* Tail (pointing up to logo) */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-15px",
+              right: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderBottom: "15px solid #ffffff",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "-10px",
+              right: "50px",
+              width: "0",
+              height: "0",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderBottom: "15px solid #f97316",
+            }}
+          />
+        </div>        {/* Hype/Attention Badge */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #ff007f 0%, #7000ff 100%)",
+            border: "3px solid #00f0ff",
+            padding: "12px 36px",
+            borderRadius: "10px",
+            color: "#ffffff",
+            fontSize: 30,
+            fontWeight: 900,
+            letterSpacing: 4,
+            marginBottom: 24,
             zIndex: 10,
-            textShadow: "0 5px 15px rgba(0,0,0,0.6)",
+            textTransform: "uppercase",
+            boxShadow: "0 10px 25px rgba(255, 0, 127, 0.6), 0 0 15px rgba(0, 240, 255, 0.3)",
+          }}
+        >
+          【覇権の歴史】
+        </div>
+
+        {/* Main Title with powerful text shadow / stroke / gradient */}
+        <h1
+          style={{
+            fontSize: 96,
+            fontWeight: 900,
+            textAlign: "center",
+            lineHeight: 1.2,
+            margin: "0 0 30px 0",
+            zIndex: 10,
+            letterSpacing: "-2px",
+            whiteSpace: "pre-wrap",
+            fontFamily: "'Outfit', 'Noto Sans JP', sans-serif",
+            background: "linear-gradient(to bottom, #ffffff 10%, #00f0ff 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 15px 25px rgba(0, 0, 0, 0.95)) drop-shadow(0 4px 6px #000000) drop-shadow(0 0 20px rgba(0, 240, 255, 0.35))",
+          }}
+        >
+          プログラミング言語<br />
+          <span
+            style={{
+              background: "linear-gradient(to bottom, #ffe600 0%, #ff007f 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            覇権の歴史
+          </span>
+        </h1>        {/* Subtitle with high-contrast text styling */}
+        <div
+          style={{
+            fontSize: 34,
+            color: "#e2e8f0",
+            fontWeight: 800,
+            zIndex: 10,
+            letterSpacing: 1,
+            background: "rgba(15, 23, 42, 0.65)",
+            padding: "8px 24px",
+            borderRadius: "6px",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            backdropFilter: "blur(4px)",
+            textShadow: "0 3px 10px rgba(0,0,0,0.8)",
           }}
         >
           人気シェア推移 (2001 - 2026)
         </div>
 
-        {/* Bottom accent line */}
+        {/* Retention Hook Text */}
         <div
           style={{
-            width: 200,
-            height: 2,
+            background: "linear-gradient(135deg, #ff0055 0%, #b91c1c 100%)",
+            border: "4px solid #ffe600",
+            padding: "16px 48px",
+            borderRadius: "14px",
+            color: "#ffe600",
+            fontSize: "36px",
+            fontWeight: 900,
+            letterSpacing: 2,
+            marginTop: 35,
+            zIndex: 10,
+            transform: "rotate(-2deg)",
+            boxShadow: "0 15px 30px rgba(255, 0, 85, 0.5), 0 0 20px rgba(255, 230, 0, 0.2)",
+            textShadow: "2px 2px 0px #000000",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ※ラスト衝撃の結末…！
+        </div>
+        {/* Bottom accent line with glowing gradient */}
+        <div
+          style={{
+            width: 300,
+            height: 3,
             background:
-              "linear-gradient(90deg, transparent, #10b981, #ff9900, #10b981, transparent)",
-            marginTop: 40,
-            borderRadius: 2,
+              "linear-gradient(90deg, transparent, #facc15, #f97316, #facc15, transparent)",
+            boxShadow: "0 0 15px rgba(250, 204, 21, 0.6)",
+            marginTop: 50,
+            borderRadius: 3,
             zIndex: 10,
           }}
         />
       </div>
     );
   }
-
   return (
     <div
       style={{
@@ -422,14 +775,14 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
         fontFamily: "'Outfit', 'Inter', 'Noto Sans JP', sans-serif",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        justifyContent: "center",
+        gap: "40px",
         padding: "80px 60px",
         boxSizing: "border-box",
         position: "relative",
         overflow: "hidden",
       }}
-    >
-      {/* Background neon grids */}
+    >      {/* Background neon grids */}
       <div
         style={{
           position: "absolute",
@@ -593,13 +946,12 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
           const logoPath = staticFile(
             `data/lang-ranking/logos/${getLogoFilename(company.name)}`
           );
-
           return (
             <div
               key={company.name}
               style={{
                 position: "absolute",
-                left: centroid.x + 20, // Offset map border padding
+                left: centroid.x + 220,
                 top: centroid.y + 20,
                 transform: "translate(-50%, -50%)",
                 display: "flex",
@@ -718,20 +1070,19 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
           </span>
         </div>
       </div>
-
       {/* EVENT DESCRIPTION SUBTITLE */}
       <div
         style={{
           background: "linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)",
           border: "1px solid rgba(255, 255, 255, 0.06)",
           borderRadius: "24px",
-          padding: "24px 32px",
-          minHeight: "100px",
+          padding: "20px 32px",
+          height: "120px",
+          boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
           zIndex: 10,
-          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
-          position: "relative",
+          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",          position: "relative",
           overflow: "hidden",
         }}
       >
@@ -788,18 +1139,18 @@ export const LangVoronoiComposition: React.FC<LangVoronoiCompositionProps> = ({
               letterSpacing: "2px",
             }}
           >
-            TOP 8 LANGUAGES
+            TOP 5 LANGUAGES
           </h3>
           <span style={{ fontSize: "18px", fontWeight: 700, color: "#10b981" }}>TIOBE INDEX SHARE</span>
         </div>
 
         {/* The Bar Chart list */}
-        <div style={{ position: "relative", height: "320px" }}>
+        <div style={{ position: "relative", height: "200px" }}>
           {companyList.map((company) => {
             const sortedIndex = sortedCompanies.findIndex(
               (c) => c.name === company.name
             );
-            if (sortedIndex >= 8) return null; // Show top 8 languages only
+            if (sortedIndex >= 5) return null; // Show top 5 languages only
 
             const rowHeight = 40;
             const barWidthMax = 580; // pixels

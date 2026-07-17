@@ -177,9 +177,9 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
     const val = startVal + (endVal - startVal) * progress;
     interpolatedStats[name] = val;
 
-    // Weight formula: perceptual scaling (power of 0.7) to avoid giant AWS swallowing others
-    // Scaled to match the squared distances on a 70x70 grid
-    const weight = Math.pow(val, 0.7) * 0.0055;
+    // Weight formula for Multiplicative Voronoi: perceptual scaling (power of 0.6)
+    // To prevent division by zero or negative weights
+    const weight = val > 0 ? Math.pow(val, 0.6) : 1e-10;
 
     return {
       name,
@@ -207,7 +207,8 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
         const node = companyList[i];
         const dx = x - node.x;
         const dy = y - node.y;
-        const d = dx * dx + dy * dy - node.weight;
+        // Multiplicative Voronoi distance: dist^2 / weight
+        const d = (dx * dx + dy * dy) / node.weight;
         if (d < minD) {
           minD = d;
           minId = i;
@@ -225,7 +226,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
 
   // Calculate centroids
   const centroids = companyList.map((node, i) => {
-    if (counts[i] > 100) {
+    if (counts[i] > 15) {
       return {
         x: (sumsX[i] / counts[i]) * (MAP_SIZE / GRID_SIZE),
         y: (sumsY[i] / counts[i]) * (MAP_SIZE / GRID_SIZE),
@@ -293,12 +294,12 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
         style={{
           width: 1080,
           height: 1920,
-          background: "#0a0a0f",
+          background: "#080810",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+          fontFamily: "'Outfit', 'Inter', 'Noto Sans JP', sans-serif",
           position: "relative",
           overflow: "hidden",
         }}
@@ -316,77 +317,396 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
             height: "100%",
             objectFit: "cover",
             zIndex: 0,
+            transform: "scale(1.05)",
           }}
         />
 
-        {/* Dark overlay to ensure text contrast */}
+        {/* Cyber Grid Overlay */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(to bottom, rgba(10,10,15,0.4) 0%, rgba(10,10,15,0.75) 100%)",
+            backgroundImage:
+              "linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+            backgroundPosition: "center",
+            pointerEvents: "none",
             zIndex: 1,
           }}
         />
 
-        {/* Thumbnail Badge */}
+        {/* Dark Vignette and Gradient Overlay */}
         <div
           style={{
-            background: "linear-gradient(135deg, #10b981, #ff9900)",
-            padding: "14px 40px",
-            borderRadius: 50,
-            color: "#ffffff",
-            fontSize: 34,
-            fontWeight: 800,
-            letterSpacing: 2,
-            marginBottom: 50,
-            boxShadow: "0 10px 30px rgba(16, 185, 129, 0.6)",
-            textTransform: "uppercase",
-            zIndex: 10,
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(circle at center, rgba(10,10,20,0.2) 0%, rgba(5,5,10,0.85) 100%)",
+            zIndex: 2,
+          }}
+        />
+
+        {/* Floating Brand Logos without speech bubbles (visual hints only) */}
+        {/* === LEFT SIDE ARCH (20% steps, safe space, expanded outwards) === */}
+        {/* AWS (Top-Left) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "16%",
+            left: "6%",
+            width: "105px",
+            height: "105px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(234, 88, 12, 0.35)",
+            border: "3px solid #ea580c",
+            transform: "rotate(-10deg)",
+            zIndex: 3,
+            opacity: 0.95,
           }}
         >
-          IP BATTLEFIELD
+          <img
+            src={staticFile("data/ip-voronoi/logos/aws.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
         </div>
 
-        {/* Main Title */}
+        {/* SoftBank (Upper-Middle-Left) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "36%",
+            left: "4%",
+            width: "95px",
+            height: "95px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25)",
+            border: "3px solid #ffcc00",
+            transform: "rotate(6deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/softbank.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* KDDI (Lower-Middle-Left) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "56%",
+            left: "4%",
+            width: "95px",
+            height: "95px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(30, 58, 138, 0.25)",
+            border: "3px solid #1e3a8a",
+            transform: "rotate(-8deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/kddi.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* NTT (Bottom-Left) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "76%",
+            left: "6%",
+            width: "105px",
+            height: "105px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(37, 99, 235, 0.35)",
+            border: "3px solid #2563eb",
+            transform: "rotate(8deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/ntt.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* === RIGHT SIDE ARCH (20% steps, safe space, expanded outwards) === */}
+        {/* Microsoft (Top-Right) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "16%",
+            right: "8%",
+            width: "105px",
+            height: "105px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(168, 85, 247, 0.35)",
+            border: "3px solid #a855f7",
+            transform: "rotate(10deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/microsoft.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* Alibaba (Upper-Middle-Right) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "36%",
+            right: "10%",
+            width: "95px",
+            height: "95px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(249, 115, 22, 0.25)",
+            border: "3px solid #f97316",
+            transform: "rotate(-5deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/alibaba.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* Tencent (Lower-Middle-Right) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "56%",
+            right: "10%",
+            width: "95px",
+            height: "95px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(0, 82, 217, 0.25)",
+            border: "3px solid #0052d9",
+            transform: "rotate(8deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/tencent.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* Google (Bottom-Right) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "76%",
+            right: "8%",
+            width: "105px",
+            height: "105px",
+            borderRadius: "50%",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 10px 25px rgba(14, 165, 233, 0.35)",
+            border: "3px solid #0ea5e9",
+            transform: "rotate(-10deg)",
+            zIndex: 3,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={staticFile("data/ip-voronoi/logos/google.png")}
+            style={{ width: "65%", height: "65%", objectFit: "contain" }}
+            alt=""
+          />
+        </div>
+
+        {/* Hype/Attention Badge */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #ff005f 0%, #7000ff 100%)",
+            border: "3px solid #00f0ff",
+            padding: "12px 36px",
+            borderRadius: "10px",
+            color: "#ffffff",
+            fontSize: 30,
+            fontWeight: 900,
+            letterSpacing: 4,
+            marginBottom: 24,
+            zIndex: 10,
+            textTransform: "uppercase",
+            boxShadow: "0 10px 25px rgba(255, 0, 95, 0.6), 0 0 15px rgba(0, 240, 255, 0.3)",
+          }}
+        >
+          【IPv4枯渇危機】
+        </div>
+
+        {/* Main Title with powerful text shadow / stroke / gradient */}
         <h1
           style={{
-            fontSize: 72,
+            fontSize: 96,
             fontWeight: 900,
-            color: "#ffffff",
             textAlign: "center",
-            lineHeight: 1.25,
+            lineHeight: 1.2,
             margin: "0 0 30px 0",
             zIndex: 10,
-            textShadow: "0 10px 40px rgba(0,0,0,0.8)",
+            letterSpacing: "-2px",
             whiteSpace: "pre-wrap",
+            fontFamily: "'Outfit', 'Noto Sans JP', sans-serif",
+            background: "linear-gradient(to bottom, #ffffff 10%, #38bdf8 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 15px 25px rgba(0, 0, 0, 0.95)) drop-shadow(0 4px 6px #000000) drop-shadow(0 0 20px rgba(0, 240, 255, 0.25))",
           }}
         >
-          IPアドレス領土戦争
+          IPアドレス<br />
+          <span
+            style={{
+              background: "linear-gradient(to bottom, #ffe600 0%, #ff2a00 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            領土戦争
+          </span>
         </h1>
-
-        {/* Subtitle */}
+        {/* Subtitle with high-contrast text styling */}
         <div
           style={{
-            fontSize: 32,
-            color: "#cbd5e1",
-            fontWeight: 700,
+            fontSize: 34,
+            color: "#e2e8f0",
+            fontWeight: 800,
             zIndex: 10,
-            textShadow: "0 5px 15px rgba(0,0,0,0.6)",
+            letterSpacing: 1,
+            background: "rgba(15, 23, 42, 0.65)",
+            padding: "8px 24px",
+            borderRadius: "6px",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            backdropFilter: "blur(4px)",
+            textShadow: "0 3px 10px rgba(0,0,0,0.8)",
           }}
         >
-          IPv4アドレス保有数の推移 (2018 - 2026)
+          IPv4アドレス保有数バトル (2018 - 2026)
         </div>
 
-        {/* Bottom accent line */}
+        {/* Hype Card 1: ●●がIPアドレスを買い占め！？ */}
         <div
           style={{
-            width: 200,
-            height: 2,
+            background: "#080810",
+            border: "4px solid #ffe600",
+            padding: "16px 36px",
+            borderRadius: "16px",
+            color: "#ffffff",
+            fontSize: "36px",
+            fontWeight: 900,
+            zIndex: 10,
+            boxShadow: "0 15px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 230, 0, 0.25)",
+            whiteSpace: "nowrap",
+            textAlign: "center",
+            width: "640px",
+            margin: "60px auto 0 auto",
+            transform: "rotate(-1deg)",
+            boxSizing: "border-box",
+          }}
+        >
+          <span style={{ color: "#ff0055" }}>●●企業</span>がIPを買い占め中…！？
+        </div>
+
+        {/* Hype Card 2: 日本の現状は・・・？ */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #ff0055 0%, #b91c1c 100%)",
+            border: "4px solid #ffffff",
+            padding: "16px 36px",
+            borderRadius: "16px",
+            color: "#ffffff",
+            fontSize: "36px",
+            fontWeight: 900,
+            zIndex: 10,
+            boxShadow: "0 15px 30px rgba(255, 0, 85, 0.5), 0 0 15px rgba(255, 255, 255, 0.1)",
+            whiteSpace: "nowrap",
+            textAlign: "center",
+            width: "640px",
+            margin: "24px auto 0 auto",
+            transform: "rotate(1deg)",
+            boxSizing: "border-box",
+          }}
+        >
+          日本企業の現状は・・・
+        </div>
+
+        {/* Watch till End Alert text */}
+        <div
+          style={{
+            color: "#ffe600",
+            fontSize: "28px",
+            fontWeight: 900,
+            letterSpacing: 2,
+            width: "640px",
+            margin: "50px auto 0 auto",
+            zIndex: 10,
+            textShadow: "0 4px 10px #000000",
+            whiteSpace: "nowrap",
+            textAlign: "center",
+            boxSizing: "border-box",
+          }}
+        >
+          ※ラスト衝撃の結末を見逃すな！
+        </div>
+
+        {/* Bottom accent line with glowing gradient */}
+        <div
+          style={{
+            width: 300,
+            height: 3,
             background:
-              "linear-gradient(90deg, transparent, #10b981, #ff9900, #10b981, transparent)",
+              "linear-gradient(90deg, transparent, #facc15, #f97316, #facc15, transparent)",
+            boxShadow: "0 0 15px rgba(250, 204, 21, 0.6)",
             marginTop: 40,
-            borderRadius: 2,
+            borderRadius: 3,
             zIndex: 10,
           }}
         />
@@ -614,7 +934,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
 
           // Load flag and logo dynamically
           const flagPath = staticFile(
-            `data/ip-voronoi/flags/${company.country.toLowerCase()}.png`
+            `data/ip-voronoi/flags/flag_${company.country.toLowerCase()}.png`
           );
           const logoPath = staticFile(
             `data/ip-voronoi/logos/${company.name.toLowerCase()}.png`
@@ -802,7 +1122,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
           border: "1px solid rgba(255, 255, 255, 0.05)",
           borderRadius: "24px",
           padding: "32px",
-          height: "440px",
+          height: "340px",
           boxSizing: "border-box",
           zIndex: 10,
           position: "relative",
@@ -823,18 +1143,26 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
           <span style={{ color: "#34d399", fontSize: "20px" }}>単位: 100万IP</span>
         </h3>
 
-        {/* The Bar Chart list */}
-        <div style={{ position: "relative", height: "320px" }}>
+        {/* The Bar Chart list (Height adjusted to fit Top 5 items) */}
+        <div style={{ position: "relative", height: "200px" }}>
           {companyList.map((company) => {
             const sortedIndex = sortedCompanies.findIndex(
               (c) => c.name === company.name
             );
+
+            const isTop5 = sortedIndex < 5;
+            if (!isTop5) {
+              return null;
+            }
+
+            const displayIndex = sortedIndex;
+
             const rowHeight = 40;
             const barWidthMax = 580; // pixels
             const barWidth = (company.ipCount / maxIpInChart) * barWidthMax;
 
             const flagPath = staticFile(
-              `data/ip-voronoi/flags/${company.country.toLowerCase()}.png`
+              `data/ip-voronoi/flags/flag_${company.country.toLowerCase()}.png`
             );
             const logoPath = staticFile(
               `data/ip-voronoi/logos/${company.name.toLowerCase()}.png`
@@ -846,7 +1174,7 @@ export const IpVoronoiComposition: React.FC<IpVoronoiCompositionProps> = ({
                 style={{
                   position: "absolute",
                   left: 0,
-                  top: sortedIndex * rowHeight,
+                  top: displayIndex * rowHeight,
                   width: "100%",
                   height: "32px",
                   display: "flex",

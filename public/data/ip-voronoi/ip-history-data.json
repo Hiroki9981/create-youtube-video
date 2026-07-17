@@ -5,7 +5,7 @@
         "AS4713",
         "AS2914"
       ],
-      "color": "#004094",
+      "color": "#2563eb",
       "country": "JP",
       "displayName": "NTT Group"
     },
@@ -15,7 +15,7 @@
         "AS9607",
         "AS17676"
       ],
-      "color": "#ffcc00",
+      "color": "#facc15",
       "country": "JP",
       "displayName": "SoftBank"
     },
@@ -23,7 +23,7 @@
       "asns": [
         "AS2516"
       ],
-      "color": "#ff6600",
+      "color": "#f97316",
       "country": "JP",
       "displayName": "KDDI"
     },
@@ -31,7 +31,7 @@
       "asns": [
         "AS16509"
       ],
-      "color": "#ff9900",
+      "color": "#ea580c",
       "country": "US",
       "displayName": "AWS"
     },
@@ -39,7 +39,7 @@
       "asns": [
         "AS15169"
       ],
-      "color": "#4285f4",
+      "color": "#0ea5e9",
       "country": "US",
       "displayName": "Google"
     },
@@ -47,7 +47,7 @@
       "asns": [
         "AS8075"
       ],
-      "color": "#00a4ef",
+      "color": "#a855f7",
       "country": "US",
       "displayName": "Microsoft"
     },
@@ -56,7 +56,7 @@
         "AS37963",
         "AS45102"
       ],
-      "color": "#ff6a00",
+      "color": "#ec4899",
       "country": "CN",
       "displayName": "Alibaba"
     },
@@ -64,7 +64,7 @@
       "asns": [
         "AS45090"
       ],
-      "color": "#0052d9",
+      "color": "#0d9488",
       "country": "CN",
       "displayName": "Tencent"
     },
@@ -73,7 +73,7 @@
         "AS3356",
         "AS209"
       ],
-      "color": "#10b981",
+      "color": "#22c55e",
       "country": "US",
       "displayName": "Lumen"
     },

@@ -1,43 +1,43 @@
 {
   "languages": {
     "Python": {
-      "color": "#3776AB",
+      "color": "#3b82f6",
       "displayName": "Python"
     },
     "Java": {
-      "color": "#ED8B00",
+      "color": "#f97316",
       "displayName": "Java"
     },
     "C": {
-      "color": "#00599C",
+      "color": "#ef4444",
       "displayName": "C"
     },
     "C++": {
-      "color": "#659AD2",
+      "color": "#a855f7",
       "displayName": "C++"
     },
     "C#": {
-      "color": "#804180",
+      "color": "#ec4899",
       "displayName": "C#"
     },
     "JavaScript": {
-      "color": "#F7DF1E",
+      "color": "#eab308",
       "displayName": "JavaScript"
     },
     "PHP": {
-      "color": "#777BB4",
+      "color": "#10b981",
       "displayName": "PHP"
     },
     "Go": {
-      "color": "#00ADD8",
+      "color": "#06b6d4",
       "displayName": "Go"
     },
     "Rust": {
-      "color": "#CE412B",
+      "color": "#ea580c",
       "displayName": "Rust"
     },
     "Objective-C": {
-      "color": "#FFAC45",
+      "color": "#6b7280",
       "displayName": "Objective-C"
     }
   },
