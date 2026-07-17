@@ -10,6 +10,8 @@ import { getAudioDurationInSeconds } from "@remotion/media-utils";
 import ipVoronoiConfig from "../public/data/ip-voronoi/video-config-ip-voronoi.json";
 import langConfig from "../public/data/lang-ranking/video-config-lang-ranking.json";
 import inboundConfig from "../public/data/inbound-tourism/video-config-inbound-tourism.json";
+import { TaxWageComposition } from "./tax-wage/TaxWageComposition";
+import taxWageConfig from "../public/data/tax-wage/video-config-tax-wage.json";
 
 // Calculate duration and metadata dynamically for Inbound Tourism video
 const calculateInboundMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
@@ -144,6 +146,36 @@ const calculateLangVoronoiMetadata: CalculateMetadataFunction<any> = async ({ pr
   };
 };
 
+// Calculate duration and metadata dynamically for TaxWage video
+const calculateTaxWageMetadata: CalculateMetadataFunction<any> = async ({ props }) => {
+  const fps = 30;
+  let totalDurationFrames = 0;
+  const resolvedScenes = [];
+
+  for (const scene of props.scenes || []) {
+    let durationInFrames = scene.durationInFrames;
+    if (durationInFrames === undefined) {
+      durationInFrames = 6 * fps;
+    }
+    resolvedScenes.push({
+      ...scene,
+      durationInFrames
+    });
+    totalDurationFrames += durationInFrames;
+  }
+
+  return {
+    width: 1080,
+    height: 1920,
+    fps,
+    durationInFrames: totalDurationFrames + 1, // +1 for frame 0 thumbnail
+    props: {
+      ...props,
+      scenes: resolvedScenes,
+    }
+  };
+};
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -199,6 +231,17 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         calculateMetadata={calculateLangVoronoiMetadata as unknown as CalculateMetadataFunction<any>}
         defaultProps={langConfig as any}
+      />
+
+      <Composition
+        id="TaxWage"
+        component={TaxWageComposition as React.FC<any>}
+        durationInFrames={150}
+        fps={30}
+        width={1080}
+        height={1920}
+        calculateMetadata={calculateTaxWageMetadata as unknown as CalculateMetadataFunction<any>}
+        defaultProps={taxWageConfig as any}
       />
     </>
   );
