@@ -130,7 +130,7 @@ if __name__ == '__main__':
     parser.add_argument('--title', default='【激変】日本に来る外国人が多すぎる！訪日観光客の10年推移が凄まじい #Shorts #統計', help='Video title')
     parser.add_argument('--description', default='日本政府観光局（JNTO）の統計データ（2016年〜2025年）をもとに、訪日外国人観光客の累計推移を可視化しました。\n\n#shorts #観光 #インバウンド #旅行 #統計 #データ可視化', help='Video description')
     parser.add_argument('--tags', default='shorts, 観光, インバウンド, 旅行, 統計, データ可視化', help='Comma-separated tags')
-    parser.add_argument('--privacy', default='private', choices=['public', 'private', 'unlisted'], help='Video privacy status')
+    parser.add_argument('--privacy', default='unlisted', choices=['public', 'private', 'unlisted'], help='Video privacy status')
     parser.add_argument('--client-secrets', default='client_secret.json', help='Path to Google APIs client_secret.json file')
     parser.add_argument('--token', default='.credentials/youtube-upload-token.pickle', help='Path to save OAuth token')
     parser.add_argument('--thumbnail', default='public/data/inbound-tourism/thumbnail.png', help='Path to thumbnail image')

@@ -4,7 +4,6 @@ import {
   staticFile,
   useCurrentFrame,
   useVideoConfig,
-  spring,
   Img,
 } from "remotion";
 import React from "react";
@@ -14,6 +13,7 @@ export interface InboundScene {
   year: number;
   events: string;
   stats: Record<string, number>;
+  isSummary?: boolean;
   audio?: string;
   durationInFrames?: number;
 }
@@ -27,241 +27,50 @@ export interface InboundVideoProps {
   totalDurationFrames?: number;
 }
 
-// ── Year-based color palette (high contrast on dark bg) ──
+// ── Flag Image Code Mapping (ISO 2-letter codes) ──
+const flagCodes: Record<string, string> = {
+  "韓国": "kr",
+  "中国": "cn",
+  "台湾": "tw",
+  "香港": "hk",
+  "米国": "us",
+  "アメリカ": "us",
+  "タイ": "th",
+  "英国": "gb",
+  "イギリス": "gb",
+  "フランス": "fr",
+  "ドイツ": "de",
+  "ロシア": "ru",
+  "オーストラリア": "au",
+  "豪州": "au",
+  "シンガポール": "sg",
+  "フィリピン": "ph",
+  "ベトナム": "vn",
+  "マレーシア": "my",
+  "インドネシア": "id",
+};
+
+// ── Year-based Color Palette for Growth Delta Stacking ──
 const yearColors: Record<number, string> = {
-  2015: "#ffffff",   // White (base)
-  2016: "#dfe6e9",   // Light Gray
-  2017: "#00b894",   // Teal Green
-  2018: "#0984e3",   // Royal Blue
-  2019: "#fdcb6e",   // Gold/Yellow
-  2020: "#ff4757",   // Coral Red (COVID drop)
-  2021: "#ffa502",   // Orange
-  2022: "#6c5ce7",   // Purple
-  2023: "#00cec9",   // Bright Cyan
-  2024: "#e84393",   // Hot Pink
-  2025: "#55efc4",   // Pastel Mint Green
+  2016: "#38bdf8",   // Sky Blue
+  2017: "#34d399",   // Mint Green
+  2018: "#fbbf24",   // Golden Yellow
+  2019: "#f87171",   // Coral Red
+  2020: "#ef4444",   // Red (COVID)
+  2021: "#f97316",   // Orange
+  2022: "#a855f7",   // Purple
+  2023: "#06b6d4",   // Cyan
+  2024: "#ec4899",   // Hot Pink (Yen Drop Surge)
+  2025: "#10b981",   // Emerald Green
 };
 
-// ── Layout constants for 9:16 (1080×1920) ──
-const CHART_BAR_START_X = 200;
-const CHART_WIDTH = 550;
-const BAR_HEIGHT = 44;
-const BAR_SPACING = 82;
-const BAR_TOP_OFFSET = 40;
-const LABEL_WIDTH = 160;
-const INTRO_FRAMES = 75; // 2.5 seconds intro animation
-
-// ── Intro Title Animation Component ──
-const IntroOverlay: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) => {
-  // Overall opacity envelope: fade in → hold → fade out
-  const envelope = interpolate(
-    frame,
-    [0, 12, 55, 75],
-    [0, 1, 1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
-
-  // Horizontal accent line: expands from center
-  const lineWidth = interpolate(frame, [5, 30], [0, 500], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Main title: spring scale-in
-  const titleSpring = spring({
-    frame: Math.max(frame - 8, 0),
-    fps,
-    config: { damping: 10, mass: 0.5, stiffness: 80 },
-  });
-  const titleScale = interpolate(titleSpring, [0, 1], [1.2, 1]);
-  const titleOpacity = interpolate(frame, [8, 22], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Subtitle year range: slides up
-  const subOpacity = interpolate(frame, [28, 42], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const subY = interpolate(frame, [28, 42], [25, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100,
-        opacity: envelope,
-        pointerEvents: "none",
-      }}
-    >
-      {/* Center glow */}
-      <div
-        style={{
-          position: "absolute",
-          width: 600,
-          height: 600,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%)",
-        }}
-      />
-
-      {/* Top accent line */}
-      <div
-        style={{
-          width: lineWidth,
-          height: 2,
-          background:
-            "linear-gradient(90deg, transparent, rgba(96,165,250,0.8), #f7dc6f, rgba(96,165,250,0.8), transparent)",
-          marginBottom: 40,
-          borderRadius: 2,
-        }}
-      />
-
-      {/* Main title */}
-      <div
-        style={{
-          fontSize: 52,
-          fontWeight: 900,
-          color: "#ffffff",
-          letterSpacing: "4px",
-          textShadow:
-            "0 0 40px rgba(96,165,250,0.5), 0 0 80px rgba(96,165,250,0.2)",
-          transform: `scale(${titleScale})`,
-          opacity: titleOpacity,
-          fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
-        }}
-      >
-        訪日観光客数推移
-      </div>
-
-      {/* Year range subtitle */}
-      <div
-        style={{
-          fontSize: 36,
-          fontWeight: 700,
-          color: "#60a5fa",
-          letterSpacing: "6px",
-          marginTop: 20,
-          opacity: subOpacity,
-          transform: `translateY(${subY}px)`,
-          textShadow: "0 0 20px rgba(96,165,250,0.4)",
-          fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
-        }}
-      >
-        ( 2016 ~ 2025 )
-      </div>
-
-      {/* Bottom accent line */}
-      <div
-        style={{
-          width: lineWidth,
-          height: 2,
-          background:
-            "linear-gradient(90deg, transparent, rgba(96,165,250,0.8), #f7dc6f, rgba(96,165,250,0.8), transparent)",
-          marginTop: 40,
-          borderRadius: 2,
-        }}
-      />
-    </div>
-  );
-};
-
-// ── Outro Animation Component ──
-const OutroOverlay: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) => {
-  const bgOpacity = interpolate(frame, [0, 20], [0, 0.95], { extrapolateRight: "clamp" });
-  const textOpacity = interpolate(frame, [10, 30], [0, 1], { extrapolateRight: "clamp" });
-
-  const springScale = spring({
-    frame: Math.max(0, frame - 10),
-    fps,
-    config: { damping: 14, stiffness: 100 },
-  });
-
-  const iconSpring = spring({
-    frame: Math.max(0, frame - 25),
-    fps,
-    config: { damping: 10, stiffness: 150 },
-  });
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        backgroundColor: `rgba(10, 10, 15, ${bgOpacity})`,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100,
-        pointerEvents: "none",
-      }}
-    >
-      <div
-        style={{
-          opacity: textOpacity,
-          transform: `scale(${interpolate(springScale, [0, 1], [0.8, 1])})`,
-          textAlign: "center",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: 48,
-            fontWeight: 900,
-            color: "#ffffff",
-            marginBottom: 60,
-            textShadow: "0 0 30px rgba(255,255,255,0.3)",
-          }}
-        >
-          ご視聴ありがとうございました！
-        </h2>
-
-        <div
-          style={{
-            background: "linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            fontSize: 64,
-            fontWeight: 900,
-            lineHeight: 1.4,
-            filter: "drop-shadow(0 0 40px rgba(253, 121, 168, 0.4))",
-          }}
-        >
-          チャンネル登録 &<br />高評価
-        </div>
-
-        <div
-          style={{
-            fontSize: 40,
-            color: "#e2e8f0",
-            marginTop: 20,
-            fontWeight: 800,
-            letterSpacing: "2px",
-          }}
-        >
-          よろしくお願いします！
-        </div>
-
-        {/* Animated Icons */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 50, marginTop: 60 }}>
-          <div style={{ fontSize: 80, transform: `scale(${iconSpring})` }}>👍</div>
-          <div style={{ fontSize: 80, transform: `scale(${iconSpring})` }}>▶️</div>
-          <div style={{ fontSize: 80, transform: `scale(${iconSpring})` }}>🔔</div>
-        </div>
-      </div>
-    </div>
-  );
-};
+// ── Layout constants for 9:16 (1080×1920) Shorts Optimized ──
+const CHART_BAR_START_X = 230;
+const CHART_WIDTH = 360;    // Reduced to 360px so value labels never overlap with bars or right border
+const BAR_HEIGHT = 44;      // Height for 10 countries
+const BAR_SPACING = 72;     // Spacing for 10 countries
+const BAR_TOP_OFFSET = 18;
+const LABEL_WIDTH = 210;    // Area for Flag Image + Country Name
 
 // ── Main Inbound Tourism Composition Component ──
 export const InboundComponent: React.FC<InboundVideoProps> = ({
@@ -270,26 +79,30 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
   bgmVolume = 0.15,
 }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames: totalDuration } = useVideoConfig();
+  const { durationInFrames: totalDuration } = useVideoConfig();
 
-  // Frame 0 shows the custom thumbnail (for mobile YouTube Shorts thumbnail selection)
+  const bgmFile = staticFile(bgm || "data/audio/shining_star.mp3");
+
+  // ── Frame 0: Clean, Ultra-Simple Catchy Thumbnail ──
   if (frame === 0) {
     return (
       <div
         style={{
           width: 1080,
           height: 1920,
-          background: "#0a0a0f",
+          background: "#08090c",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+          fontFamily: "'Outfit', 'Inter', 'Noto Sans JP', sans-serif",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Flashy generated background image */}
+        <Audio src={bgmFile} volume={bgmVolume} loop />
+
+        {/* Clean background image with simple dark overlay */}
         <Img
           src={staticFile("data/inbound-tourism/thumbnail_bg.png")}
           style={{
@@ -302,115 +115,54 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
           }}
         />
 
-        {/* Dark overlay to ensure text contrast */}
+        {/* Simple Dark overlay for text legibility */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(to bottom, rgba(10,10,15,0.4) 0%, rgba(10,10,15,0.75) 100%)",
+            background: "rgba(8, 9, 12, 0.85)",
             zIndex: 1,
           }}
         />
 
-        {/* Thumbnail Badge */}
-        <div
+        {/* Main Title Only (Clean, Ultra-Simple, Big) */}
+        <h1
           style={{
-            background: "linear-gradient(135deg, #e84393, #6c5ce7)",
-            padding: "14px 40px",
-            borderRadius: 50,
+            fontSize: 96,
+            fontWeight: 950,
+            textAlign: "center",
+            lineHeight: 1.35,
+            margin: 0,
+            zIndex: 10,
             color: "#ffffff",
-            fontSize: 34,
-            fontWeight: 800,
-            letterSpacing: 2,
-            marginBottom: 50,
-            boxShadow: "0 10px 30px rgba(232, 67, 147, 0.6)",
-            textTransform: "uppercase",
-            zIndex: 10,
+            textShadow: "0 10px 40px rgba(0,0,0,0.95)",
           }}
         >
-          INBOUND STATS
-        </div>
-
-        {/* Thumbnail Title */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: "90%",
-            zIndex: 10,
-          }}
-        >
-          <div
+          日本に来る外国人<br />
+          <span
             style={{
-              fontSize: 140,
+              color: "#fbbf24",
+              fontSize: 102,
               fontWeight: 950,
-              color: "#ff4757",
-              textShadow: "0 10px 40px rgba(255, 71, 87, 0.8), 0 0 100px rgba(255, 71, 87, 0.5)",
-              transform: "rotate(-3deg)",
-              marginBottom: 20,
-              letterSpacing: 4,
+              textShadow: "0 0 20px rgba(251, 191, 36, 0.5)",
             }}
           >
-            激変！
-          </div>
-          <div
-            style={{
-              fontSize: 82,
-              fontWeight: 900,
-              color: "#ffffff",
-              textAlign: "center",
-              lineHeight: 1.3,
-              textShadow: "0 10px 40px rgba(0, 0, 0, 0.95)",
-              letterSpacing: 2,
-            }}
-          >
-            訪日外国人の
-            <br />
-            <span
-              style={{
-                background: "linear-gradient(to right, #ffd32a, #ffa502, #ff7f50)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                fontSize: 102,
-                fontWeight: 950,
-                filter: "drop-shadow(0 4px 15px rgba(255, 211, 42, 0.5))",
-              }}
-            >
-              10年推移
-            </span>
-          </div>
-        </div>
-
-        {/* Subtitle / CTA */}
-        <div
-          style={{
-            marginTop: 90,
-            fontSize: 40,
-            color: "#ffffff",
-            fontWeight: 800,
-            letterSpacing: 4,
-            borderBottom: "4px solid #ff4757",
-            paddingBottom: 12,
-            zIndex: 10,
-            textShadow: "0 4px 15px rgba(0, 0, 0, 0.8)",
-          }}
-        >
-          2016 - 2025 統計データ
-        </div>
+            10年でどう変わった？
+          </span>
+        </h1>
       </div>
     );
   }
 
-  // Shift video logic by 1 frame to accommodate the thumbnail frame at the start
+  // Shift video logic by 1 frame to accommodate thumbnail frame at start
   const adjustedFrame = frame - 1;
 
-  // ── 1. Determine current scene index and local frame ──
+  // ── 1. Timeline & Scene Calculation ──
   let cumulativeFrames = 0;
   let currentSceneIndex = scenes.length - 1;
 
   for (let i = 0; i < scenes.length; i++) {
-    const dur = scenes[i].durationInFrames || 180;
+    const dur = scenes[i].durationInFrames || 120;
     if (adjustedFrame < cumulativeFrames + dur) {
       currentSceneIndex = i;
       break;
@@ -419,414 +171,523 @@ export const InboundComponent: React.FC<InboundVideoProps> = ({
   }
 
   const currentScene = scenes[currentSceneIndex];
-  const eventText = currentScene.events;
-  const nextSceneIdx = Math.min(currentSceneIndex + 1, scenes.length - 1);
-  const nextScene = scenes[nextSceneIdx];
-  const sceneDuration = currentScene.durationInFrames || 180;
+  const isSummary = currentScene.isSummary || false;
+  const sceneDuration = currentScene.durationInFrames || 120;
   const localFrame = adjustedFrame - cumulativeFrames;
 
-  // ── 2. Intro handling ──
-  // The intro plays during the first INTRO_FRAMES of scene 0.
-  // Chart progress within scene 0 is offset by INTRO_FRAMES.
-  // const isInIntro = currentSceneIndex === 0 && localFrame < INTRO_FRAMES;
+  const progress = Math.min(localFrame / sceneDuration, 1);
 
-  const chartLocalFrame =
-    currentSceneIndex === 0
-      ? Math.max(0, localFrame - INTRO_FRAMES)
-      : localFrame;
-  const chartSceneDuration =
-    currentSceneIndex === 0
-      ? Math.max(1, sceneDuration - INTRO_FRAMES)
-      : sceneDuration;
-  const progress = Math.min(chartLocalFrame / chartSceneDuration, 1);
+  // ── 2. Clean, Perfectly Balanced Summary Ending Card ──
+  if (isSummary) {
+    return (
+      <div
+        style={{
+          width: 1080,
+          height: 1920,
+          backgroundColor: "#050608",
+          color: "#ffffff",
+          fontFamily: "'Outfit', 'Inter', 'Noto Sans JP', sans-serif",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "180px 40px 320px 40px", // 320px bottom safe zone for Shorts UI
+          boxSizing: "border-box",
+          position: "relative",
+          overflow: "hidden",
+          justifyContent: "space-between",
+        }}
+      >
+        {bgm && <Audio src={staticFile(bgm)} volume={bgmVolume} />}
 
-  // Display year (interpolated for watermark)
-  const displayYear = interpolate(progress, [0, 1], [currentScene.year, nextScene.year]);
+        {/* Cyber Grid background */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(255, 255, 255, 0.008) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.008) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
 
-  // Chart opacity (fade in after intro)
-  const chartOpacity =
-    currentSceneIndex === 0
-      ? interpolate(localFrame, [INTRO_FRAMES - 10, INTRO_FRAMES + 10], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        })
-      : 1;
+        {/* Glow Overlays */}
+        <div style={{ position: "absolute", width: "800px", height: "800px", borderRadius: "50%", background: "radial-gradient(circle, rgba(56, 189, 248, 0.06) 0%, transparent 70%)", top: "15%", left: "10%", zIndex: 1, pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: "800px", height: "800px", borderRadius: "50%", background: "radial-gradient(circle, rgba(236, 72, 153, 0.06) 0%, transparent 70%)", bottom: "25%", right: "10%", zIndex: 1, pointerEvents: "none" }} />
 
-  // Fade out BGM in the last 90 frames (3 seconds) to prevent harsh cutting/cracking
-  const outroStartFrame = (totalDuration - 1) - 90;
-  const currentVolume = interpolate(
-    adjustedFrame,
-    [outroStartFrame, (totalDuration - 1) - 15],
-    [bgmVolume, 0],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-    }
-  );
+        {/* Big Clean Title */}
+        <h2
+          style={{
+            fontSize: "68px",
+            fontWeight: 950,
+            textAlign: "center",
+            margin: "0 0 40px 0",
+            zIndex: 10,
+            color: "#ffffff",
+            letterSpacing: "-1px",
+            textShadow: "0 10px 30px rgba(0, 0, 0, 0.9)",
+          }}
+        >
+          10年間でどう変わった？
+        </h2>
 
-  // ── 3. Gather all countries ──
-  const allCountries = Object.keys(scenes[1]?.stats || scenes[0]?.stats || {});
+        {/* Perfectly Balanced Fact Cards Container */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "24px",
+            width: "800px",
+            zIndex: 10,
+          }}
+        >
+          {/* Fact 1 */}
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", border: "1.5px solid rgba(255, 255, 255, 0.08)", borderRadius: "24px", padding: "26px 32px", display: "flex", alignItems: "center", gap: "28px" }}>
+            <div style={{ fontSize: "44px", color: "#38bdf8", fontWeight: 950, width: "36px", textAlign: "center" }}>1</div>
+            <div>
+              <div style={{ fontSize: "20px", color: "#9ca3af", fontWeight: 700, marginBottom: "4px" }}>圧倒的な人数</div>
+              <div style={{ fontSize: "30px", color: "#ffffff", fontWeight: 900 }}>10年ずっと <span style={{ color: "#38bdf8" }}>韓国 ＆ 中国</span> がトップ2！</div>
+            </div>
+          </div>
 
-  // ── 4. For each country, compute currentValue and stacked segments ──
+          {/* Fact 2 */}
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", border: "1.5px solid rgba(255, 255, 255, 0.08)", borderRadius: "24px", padding: "26px 32px", display: "flex", alignItems: "center", gap: "28px" }}>
+            <div style={{ fontSize: "44px", color: "#ef4444", fontWeight: 950, width: "36px", textAlign: "center" }}>2</div>
+            <div>
+              <div style={{ fontSize: "20px", color: "#9ca3af", fontWeight: 700, marginBottom: "4px" }}>ショックな出来事</div>
+              <div style={{ fontSize: "30px", color: "#ffffff", fontWeight: 900 }}>2020年のコロナで <span style={{ color: "#ef4444" }}>一度ほぼ全滅…</span></div>
+            </div>
+          </div>
+
+          {/* Fact 3 */}
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", border: "1.5px solid rgba(255, 255, 255, 0.08)", borderRadius: "24px", padding: "26px 32px", display: "flex", alignItems: "center", gap: "28px" }}>
+            <div style={{ fontSize: "44px", color: "#fbbf24", fontWeight: 950, width: "36px", textAlign: "center" }}>3</div>
+            <div>
+              <div style={{ fontSize: "20px", color: "#9ca3af", fontWeight: 700, marginBottom: "4px" }}>円安の強烈な影響</div>
+              <div style={{ fontSize: "30px", color: "#ffffff", fontWeight: 900 }}>空前の円安で <span style={{ color: "#fbbf24" }}>史上最多の3,500万人越え！</span></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Expanded, High-Visibility CTA Comment Prompt */}
+        <div
+          style={{
+            width: "800px",
+            zIndex: 10,
+            background: "linear-gradient(180deg, rgba(236, 72, 153, 0.18) 0%, rgba(8, 9, 12, 0.95) 100%)",
+            border: "3px dashed #ec4899",
+            borderRadius: "28px",
+            padding: "32px 28px",
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.7)",
+            boxSizing: "border-box",
+            marginTop: "36px",
+          }}
+        >
+          <p style={{ fontSize: "28px", fontWeight: 900, color: "#ffffff", margin: "0 0 12px 0", textAlign: "center", lineHeight: "1.4" }}>
+            外国人が急増して街や観光地が混んでるの、どう思う？
+          </p>
+          <p
+            style={{
+              fontSize: "34px",
+              fontWeight: 950,
+              color: "#ec4899",
+              textShadow: "0 0 15px rgba(236, 72, 153, 0.5)",
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            👇 ぜひコメント欄で教えてね！ 👇
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 3. Normal Chart Scene Interpolation ──
+  const prevSceneIdx = Math.max(0, currentSceneIndex - 1);
+  const prevScene = scenes[prevSceneIdx];
+
+  // Directly display currentScene.year to perfectly match event text!
+  const displayYear = currentScene.year;
+
+  // Gather country data & Calculate animated currentValue from previous year to current year
+  const allCountries = Object.keys(scenes[0]?.stats || {});
   const countryData = allCountries.map((country) => {
-    const fromVal = currentScene.stats[country] || 0;
-    const toVal = nextScene.stats[country] || 0;
+    const fromVal = currentSceneIndex === 0 ? 0 : (prevScene.stats[country] || 0);
+    const toVal = currentScene.stats[country] || 0;
+
     const currentValue = interpolate(progress, [0, 1], [fromVal, toVal], {
       extrapolateRight: "clamp",
     });
 
-    // Build positive-delta segments for proportional stacking
+    // Build positive-delta segments for proportional year-by-year color stacking
     const positiveDeltas: { year: number; delta: number }[] = [];
 
-    for (let i = 1; i <= currentSceneIndex; i++) {
-      const delta =
-        (scenes[i].stats[country] || 0) - (scenes[i - 1].stats[country] || 0);
+    for (let i = 0; i <= currentSceneIndex; i++) {
+      const prev = i === 0 ? 0 : (scenes[i - 1].stats[country] || 0);
+      const delta = (scenes[i].stats[country] || 0) - prev;
       if (delta > 0) {
         positiveDeltas.push({ year: scenes[i].year, delta });
       }
     }
 
-    if (currentSceneIndex < scenes.length - 1) {
-      const prevVal = scenes[currentSceneIndex].stats[country] || 0;
-      const transitionDelta = currentValue - prevVal;
-      if (transitionDelta > 0) {
-        positiveDeltas.push({
-          year: scenes[currentSceneIndex + 1].year,
-          delta: transitionDelta,
-        });
-      }
-    }
-
     const totalPositive = positiveDeltas.reduce((s, d) => s + d.delta, 0);
+
     return { country, currentValue, positiveDeltas, totalPositive };
   });
 
-  // ── 5. Sort by current value for ranking ──
+  // Sort ALL countries (Keep original 10 countries!)
   const sorted = [...countryData].sort((a, b) => b.currentValue - a.currentValue);
-  const maxValue = Math.max(...countryData.map((d) => d.currentValue), 1);
+  const maxValue = Math.max(...sorted.map((d) => d.currentValue), 1);
 
-  // ── Render ──
+  // BGM volume fade out
+  const outroStartFrame = (totalDuration - 1) - 90;
+  const currentVolume = interpolate(
+    adjustedFrame,
+    [outroStartFrame, (totalDuration - 1) - 15],
+    [bgmVolume, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
   return (
     <div
       style={{
         width: 1080,
         height: 1920,
-        background: "#0a0a0f",
+        background: "#08090c",
         display: "flex",
         flexDirection: "column",
-        fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
-        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "60px 40px 20px 40px",
+        boxSizing: "border-box",
         position: "relative",
+        overflow: "hidden",
+        fontFamily: "'Outfit', 'Inter', 'Noto Sans JP', sans-serif",
       }}
     >
-      {/* Background BGM (fades out at the end, loop removed to prevent glitches) */}
       {bgm && <Audio src={staticFile(bgm)} volume={currentVolume} />}
 
-      {/* Background ambient glow */}
+      {/* Cyber Grid Background */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(ellipse at 50% 15%, rgba(30, 42, 70, 0.3) 0%, transparent 65%)",
+          backgroundImage:
+            "linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
           pointerEvents: "none",
+          zIndex: 1,
         }}
       />
 
+      {/* Top Spacer for Shorts UI Safe Zone */}
+      <div style={{ height: 200 }} />
 
-
-      {/* ═══ INTRO OVERLAY ═══ */}
-      {currentSceneIndex === 0 && (
-        <IntroOverlay frame={localFrame} fps={fps} />
-      )}
-
-      {/* ═══ CHART CONTENT (fades in after intro) ═══ */}
+      {/* ═══ 1. FIXED HEADER BANNER & YEAR BADGE ═══ */}
       <div
         style={{
+          width: "800px",
+          background: "linear-gradient(180deg, rgba(20, 24, 33, 0.95) 0%, rgba(8, 9, 12, 0.95) 100%)",
+          border: "2px solid #38bdf8",
+          borderRadius: "24px",
+          padding: "18px 32px",
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
           alignItems: "center",
-          opacity: chartOpacity,
-          width: "100%",
+          boxShadow: "0 10px 30px rgba(56, 189, 248, 0.2), 0 0 25px rgba(0, 0, 0, 0.8)",
+          zIndex: 10,
+          boxSizing: "border-box",
         }}
       >
-        {/* Top Spacer for Shorts UI Safe Zone (pushes content below top UI overlay) */}
-        <div style={{ height: 260 }} />
-
-        {/* ═══ EVENT TEXT HEADER ═══ */}
-        <div style={{ padding: "0 40px", zIndex: 10, height: 140, width: "100%", boxSizing: "border-box" }}>
-          {eventText && (
-            <div
-              style={{
-                padding: "20px 30px",
-                background: "rgba(16, 18, 32, 0.75)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 14,
-                color: "#e2e8f0",
-                fontSize: 26,
-                fontWeight: 800,
-                lineHeight: 1.5,
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                boxSizing: "border-box",
-              }}
-            >
-              {eventText}
-            </div>
-          )}
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <div style={{ width: "16px", height: "16px", borderRadius: "50%", backgroundColor: "#38bdf8", boxShadow: "0 0 12px #38bdf8" }} />
+          <span style={{ fontSize: "30px", fontWeight: 900, color: "#ffffff", letterSpacing: "1px" }}>
+            国別 訪日外国人ランキング
+          </span>
         </div>
-
-        {/* Gap between header and chart */}
-        <div style={{ height: 30 }} />
-
-        {/* ── CHART AREA (condensed vertically to fit safely in the center) ── */}
-        <div
+        {/* Huge Year Badge */}
+        <span
           style={{
-            height: 850,
-            width: "100%",
-            padding: "0 40px",
-            boxSizing: "border-box",
-            position: "relative",
-            zIndex: 10,
+            fontSize: "64px",
+            fontWeight: 900,
+            color: "#fbbf24",
+            textShadow: "0 0 20px rgba(251, 191, 36, 0.5)",
+            fontFamily: "'Outfit', monospace",
           }}
         >
-          {/* Semi-transparent chart backdrop */}
-          <div
-            style={{
-              position: "absolute",
-              inset: "0 40px",
-              background: "rgba(16, 18, 32, 0.55)",
-              border: "1px solid rgba(255,255,255,0.04)",
-              borderRadius: 20,
-            }}
-          />
+          {displayYear}年
+        </span>
+      </div>
 
-          {/* Watermark year in the background of the chart (faint & safe from overlays) */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 40,
-              right: 80,
-              fontSize: 170,
-              fontWeight: 900,
-              fontFamily: "monospace",
-              color: "rgba(255, 255, 255, 0.05)", // Extremely faint watermark
-              lineHeight: 0.8,
-              zIndex: 1,
-              pointerEvents: "none",
-            }}
-          >
-            {Math.floor(displayYear)}
-          </div>
+      {/* ═══ 2. EXPLANATORY EVENT TEXT CONTAINER ═══ */}
+      <div
+        style={{
+          background: "linear-gradient(180deg, rgba(20, 24, 33, 0.95) 0%, rgba(8, 9, 12, 0.95) 100%)",
+          border: "2px solid #ef4444",
+          borderRadius: "24px",
+          padding: "18px 36px",
+          height: "125px",
+          width: "800px",
+          margin: "14px auto 0 auto",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          zIndex: 10,
+          boxShadow: "0 10px 30px rgba(239, 68, 68, 0.15), 0 0 25px rgba(0, 0, 0, 0.8)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: "8px",
+            height: "46px",
+            backgroundColor: "#ef4444",
+            borderRadius: "4px",
+            marginRight: "20px",
+            boxShadow: "0 0 12px #ef4444",
+            flexShrink: 0,
+          }}
+        />
+        <p
+          style={{
+            fontSize: "28px",
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: "1.4",
+            margin: 0,
+            fontFamily: "'Noto Sans JP', sans-serif",
+          }}
+        >
+          {currentScene.events}
+        </p>
+      </div>
 
-          {/* Max value vertical dashed line */}
-          <div
-            style={{
-              position: "absolute",
-              left: CHART_BAR_START_X + CHART_WIDTH,
-              top: BAR_TOP_OFFSET,
-              height: BAR_SPACING * 9 + BAR_HEIGHT,
-              width: 0,
-              borderRight: "2px dashed rgba(255,100,100,0.30)",
-              zIndex: 2,
-              pointerEvents: "none",
-            }}
-          />
+      {/* ═══ 3. ALL 10 COUNTRIES RANKING CHART (With Overlap-Free Layout) ═══ */}
+      <div
+        style={{
+          background: "linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.00) 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.05)",
+          borderRadius: "32px",
+          padding: "20px 32px",
+          width: "800px",
+          margin: "14px auto 0 auto",
+          zIndex: 10,
+          height: "770px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          boxShadow: "0 15px 35px rgba(0, 0, 0, 0.3)",
+          boxSizing: "border-box",
+          position: "relative",
+        }}
+      >
+        {/* Bars Container for all countries */}
+        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          {sorted.map((item) => {
+            const rank = sorted.findIndex((d) => d.country === item.country);
+            const barPixelWidth = (item.currentValue / maxValue) * CHART_WIDTH;
+            const topPosition = rank * BAR_SPACING + BAR_TOP_OFFSET;
+            const flagCode = flagCodes[item.country] || "us";
 
-          {/* ── BARS ── */}
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              height: "100%",
-              zIndex: 5,
-            }}
-          >
-            {countryData.map((item) => {
-              const rank = sorted.findIndex(
-                (d) => d.country === item.country
-              );
-              const barPixelWidth =
-                (item.currentValue / maxValue) * CHART_WIDTH;
-              const topPosition = rank * BAR_SPACING + BAR_TOP_OFFSET;
+            // Format numbers to 簡潔な「万人」
+            const mainValueInTenThousand = (item.currentValue / 10000).toLocaleString("ja-JP", {
+              maximumFractionDigits: 0,
+            });
 
-              const segments =
-                item.totalPositive > 0
-                  ? item.positiveDeltas.map((d) => ({
-                      year: d.year,
-                      pixelWidth:
-                        (d.delta / item.totalPositive) * barPixelWidth,
-                      color: yearColors[d.year] || "#ffffff",
-                    }))
-                  : [];
+            // Calculate positive-delta segments for proportional year-by-year color breakdown
+            const segments =
+              item.totalPositive > 0
+                ? item.positiveDeltas.map((d) => ({
+                    year: d.year,
+                    pixelWidth: (d.delta / item.totalPositive) * barPixelWidth,
+                    color: yearColors[d.year] || "#38bdf8",
+                  }))
+                : [];
 
-              return (
+            return (
+              <div
+                key={item.country}
+                style={{
+                  position: "absolute",
+                  top: topPosition,
+                  left: 0,
+                  width: "100%",
+                  height: BAR_HEIGHT,
+                  transition: "top 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {/* Country Name Label with REAL Flag Image */}
                 <div
-                  key={item.country}
                   style={{
                     position: "absolute",
-                    top: topPosition,
-                    left: 10,
-                    width: "calc(100% - 20px)",
-                    height: BAR_HEIGHT,
-                    transition:
-                      "top 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                    left: 0,
+                    width: LABEL_WIDTH,
+                    textAlign: "right",
+                    fontWeight: 900,
+                    fontSize: 26,
+                    color: "#ffffff",
+                    paddingRight: 16,
+                    letterSpacing: "1px",
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "flex-end",
+                    gap: "10px",
                   }}
                 >
-                  {/* Country name label */}
-                  <div
+                  <Img
+                    src={staticFile(`data/inbound-tourism/flags/${flagCode}.png`)}
                     style={{
-                      position: "absolute",
-                      left: 0,
-                      width: LABEL_WIDTH,
-                      textAlign: "right",
-                      fontWeight: 900,
-                      fontSize: 26,
-                      color: "#e2e8f0",
-                      paddingRight: 20,
-                      letterSpacing: "1px",
+                      width: "36px",
+                      height: "25px",
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+                      border: "1px solid rgba(255,255,255,0.2)",
                     }}
-                  >
-                    {item.country}
-                  </div>
+                  />
+                  <span>{item.country}</span>
+                </div>
 
-                  {/* Stacked bar segments */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: CHART_BAR_START_X - 10,
-                      height: "100%",
-                      display: "flex",
-                      borderRadius: "0 8px 8px 0",
-                      overflow: "hidden",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {segments.map((seg, si) => (
+                {/* Stacked Year-by-Year Color Bar Segment */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: CHART_BAR_START_X,
+                    width: Math.max(barPixelWidth, 6),
+                    height: "100%",
+                    display: "flex",
+                    borderRadius: "0 8px 8px 0",
+                    overflow: "hidden",
+                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.4)",
+                  }}
+                >
+                  {segments.length > 0 ? (
+                    segments.map((seg, si) => (
                       <div
                         key={`${item.country}-${seg.year}-${si}`}
                         style={{
                           width: Math.max(seg.pixelWidth, 0),
                           height: "100%",
                           backgroundColor: seg.color,
-                          borderRight:
-                            si < segments.length - 1
-                              ? "1px solid rgba(0,0,0,0.4)"
-                              : "none",
+                          borderRight: si < segments.length - 1 ? "1px solid rgba(0,0,0,0.35)" : "none",
                           transition: "width 0.05s linear",
                         }}
                       />
-                    ))}
-                  </div>
-
-                  {/* Value label */}
-                  <span
-                    style={{
-                      position: "absolute",
-                      left:
-                        CHART_BAR_START_X -
-                        10 +
-                        Math.max(barPixelWidth, 6) +
-                        20,
-                      color: "#ffffff",
-                      fontSize: 24,
-                      fontWeight: 900,
-                      fontFamily: "monospace",
-                      whiteSpace: "nowrap",
-                      transition: "left 0.05s linear",
-                    }}
-                  >
-                    {Math.round(item.currentValue).toLocaleString()} 人
-                  </span>
+                    ))
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#38bdf8",
+                      }}
+                    />
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Gap between chart and legend */}
-        <div style={{ height: 30 }} />
-
-        {/* ═══ YEAR LEGEND (5 per row grid) ═══ */}
-        <div style={{ padding: "0 40px", zIndex: 10, width: "100%", boxSizing: "border-box" }}>
-          <div
-            style={{
-              background: "rgba(16, 18, 32, 0.75)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 14,
-              padding: "18px 24px",
-              display: "grid",
-              gridTemplateColumns: "repeat(5, 1fr)",
-              gap: "14px 12px",
-              justifyItems: "center",
-            }}
-          >
-            {Object.entries(yearColors)
-              .filter(([year]) => Number(year) >= 2016)
-              .map(([year, color]) => (
-                <div
-                  key={year}
+                {/* Value Label in 万人 (Positioned cleanly outside without overlapping bars) */}
+                <span
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
+                    position: "absolute",
+                    left: CHART_BAR_START_X + Math.max(barPixelWidth, 6) + 16,
+                    color: "#ffffff",
+                    fontSize: 26,
+                    fontWeight: 900,
+                    fontFamily: "'Outfit', monospace",
+                    whiteSpace: "nowrap",
+                    transition: "left 0.05s linear",
+                    textShadow: "0 0 10px rgba(0, 0, 0, 0.8)",
                   }}
                 >
-                  <div
-                    style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: 6,
-                      backgroundColor: color,
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span
-                    style={{
-                      color: "#cbd5e1",
-                      fontSize: 22,
-                      fontWeight: 800,
-                    }}
-                  >
-                    {year}年
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Gap between legend and footer */}
-        <div style={{ height: 20 }} />
-
-        {/* ═══ FOOTER (Year removed from here, credits kept clean) ═══ */}
-        <div
-          style={{
-            padding: "0 40px",
-            width: "100%",
-            boxSizing: "border-box",
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-            zIndex: 10,
-          }}
-        >
-          <span style={{ color: "#475569", fontSize: 16, fontWeight: 700 }}>
-            データ出典: 日本政府観光局 (JNTO)
-          </span>
-          <span style={{ color: "#475569", fontSize: 16, fontWeight: 700 }}>
-            VISUALIZED WITH REMOTION
-          </span>
+                  {mainValueInTenThousand} <span style={{ fontSize: "20px", color: "#9ca3af", fontWeight: 700 }}>万人</span>
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* ═══ OUTRO OVERLAY ═══ */}
-      {currentSceneIndex === scenes.length - 1 && localFrame >= sceneDuration - 90 && (
-        <OutroOverlay frame={localFrame - (sceneDuration - 90)} fps={fps} />
-      )}
+      {/* ═══ 4. YEAR COLOR LEGEND BAR (Visual guide to see which color corresponds to which year's growth) ═══ */}
+      <div
+        style={{
+          width: "800px",
+          background: "rgba(15, 23, 42, 0.85)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "16px",
+          padding: "12px 20px",
+          display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
+          gap: "8px 12px",
+          justifyItems: "center",
+          alignItems: "center",
+          zIndex: 10,
+          boxSizing: "border-box",
+          margin: "10px auto 0 auto",
+        }}
+      >
+        {Object.entries(yearColors)
+          .filter(([year]) => Number(year) >= 2016)
+          .map(([year, color]) => (
+            <div
+              key={year}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <div
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  borderRadius: "4px",
+                  backgroundColor: color,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.4)",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  color: "#e2e8f0",
+                  fontSize: "18px",
+                  fontWeight: 800,
+                }}
+              >
+                {year}年
+              </span>
+            </div>
+          ))}
+      </div>
+
+      {/* ═══ 5. FOOTER: SOURCE CREDITS & NOTICE (Safe-Zone 260px spacing below) ═══ */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "4px",
+          zIndex: 10,
+          marginBottom: "260px", // Pushed up for Shorts UI overlay safety
+          marginTop: "10px",
+        }}
+      >
+        <span
+          style={{
+            color: "#6b7280",
+            fontSize: "18px",
+            fontWeight: 800,
+            letterSpacing: "0.5px",
+          }}
+        >
+          出典: 日本政府観光局 (JNTO)「訪日外客統計」
+        </span>
+      </div>
     </div>
   );
 };
